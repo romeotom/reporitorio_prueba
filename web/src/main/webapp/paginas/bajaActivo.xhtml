@@ -1,0 +1,150 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedor.xhtml">
+	<ui:define name="titulo">
+       	Dar de Baja
+    </ui:define>
+	<ui:define name="contenido">
+		<br />
+		<h:form>
+			<div style="width: 100%;" align="center">
+				<rich:panel style="width:90%">
+					<h:panelGrid columns="3" columnClasses="width30,width70," style="width:90%">
+						<h:outputText value="Serial del Activo:&#32;" style="font-weight: bold;" />
+						<h:panelGroup>
+							<h:inputText id="serialIt" value="#{bajaActivoController.serial}" style="width:95%" required="true" requiredMessage="Campo requerido" />
+							<rich:message for="serialIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+						</h:panelGroup>
+						<a4j:commandButton value="Buscar" action="#{bajaActivoController.buscarActivo()}" render="activosLista tablaActivos" />
+					</h:panelGrid>
+				</rich:panel>
+				<br />
+				<h:panelGroup id="activosLista">
+					<rich:panel style="width:90%">
+						<div style="width: 100%;">
+							<rich:dataTable id="tablaActivos" var="detalle" 
+								value="#{bajaActivoController.listaDetalleActivo}" 
+							 	noDataLabel="No se han encontrado resultados con los datos ingresados"
+           						onrowmouseover="this.style.backgroundColor='#FFFFE0'" 
+           						rows="20" style="width:95%;background-color:#F7FDFC;" iterationStatusVar="it"
+								onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+								<rich:column>
+									<f:facet name="header">#</f:facet>
+               						#{it.index+1}
+            					</rich:column>
+            					<rich:column style="width:70px;">
+            						<f:facet name="header">Tipo</f:facet>
+            						<h:outputText value="#{detalle.descripcionTipoActivo}" />
+            					</rich:column>
+            					<rich:column style="width:110px;">
+            						<f:facet name="header">Asignado</f:facet>
+            						<h:outputText value="#{bajaActivoController.obtenerDescripcion(detalle.actLaboratorioSala.codigoTipo)}#{detalle.actLaboratorioSala.nombreTipo}" />
+            					</rich:column>
+            					<rich:column style="width:285px;">
+            						<f:facet name="header">Serial</f:facet>
+            						<h:outputText value="#{bajaActivoController.obtenerCadenaCortada(detalle.serial, 50)}" title="#{detalle.serial}" />
+            					</rich:column>
+            					<rich:column style="width:30px;">
+            						<f:facet name="header">A&#241;o</f:facet>
+            						<h:outputText value="#{detalle.actLaboratorioSala.actFormulario.anio}" />
+            					</rich:column>
+            					<rich:column>
+	          						<f:facet name="header"></f:facet>
+	          						<center>
+	            						<a4j:commandLink render="bajaFrm:bajaIngreso, bajaFrm:bajaPgr" 
+	            							oncomplete="if(#{facesContext.maximumSeverity.ordinal!=2})  #{rich:component('bajaActivoPopup')}.show()" 
+	            							action="#{bajaActivoController.tomarActivo(detalle)}">
+	            							<h:graphicImage value="/img/delete.gif" alt="Dar de Baja" title="Dar de Baja" />
+										</a4j:commandLink>
+									</center>
+								</rich:column>
+            					<f:facet name="footer">
+                					<rich:dataScroller />
+            					</f:facet>
+           					</rich:dataTable>
+						</div>
+					</rich:panel>
+				</h:panelGroup>
+			</div>
+		</h:form>
+
+		<rich:popupPanel id="bajaActivoPopup" modal="true" autosized="true"
+			width="600" maxHeight="600">
+			<f:facet name="header">
+				<h:outputText value="Dar de Baja" />
+			</f:facet>
+			<h:form id="bajaFrm">
+				<h:panelGroup id="bajaIngreso">
+					<div align="center">
+						<rich:panel style="width:80%">
+							<h:panelGrid columns="1" style="width:90%">
+								<h:outputText value="Ud. va a realizar las siguientes acciones:&#32;" />
+								<p>
+									<h:outputLabel value="Dar de baja el activo con serial:&#32;" />
+									<h:outputLabel style="font-weight: bold;" title="#{bajaActivoController.detalleActivo.serial}"
+										value="#{bajaActivoController.obtenerCadenaCortada(bajaActivoController.detalleActivo.serial, 50)}" />
+								</p>
+								<h:outputText value="Una vez realizada la acción NO podra reversarla.&#32;" />
+								<h:outputText value="Ingrese la información requerida referente a Motivo para dar de baja el activo y observaciones de lo realizado.&#32;" />
+								<h:outputText value="Si desea continuar presione Aceptar, caso contrario, presione Cancelar" />
+							</h:panelGrid>
+						</rich:panel>
+						<br/><br/>
+						<h:panelGroup>
+							<div align="center">
+						<h:panelGrid columns="2" id="bajaPgr" columnClasses="width30,width70" style="width:90%">
+							<h:outputText style="font-weight: bold;" value="* Motivo:" />
+							<h:panelGroup>				
+								<h:selectOneMenu id="activo"
+									required="#{param['validar'] == '1'}"
+									value="#{bajaActivoController.detalleActivo.motivoBaja}"
+									requiredMessage="Campo requerido." style="width:54%">
+									<f:selectItem itemLabel="Seleccione..."
+										noSelectionOption="true" />
+									<f:selectItems value="#{bajaActivoController.listaMotivosBaja}"
+										var="act" itemLabel="#{act.descripcion}"
+										itemValue="#{act.codigo}" />
+									<a4j:ajax execute="@this" render="activo msgActivo" />
+								</h:selectOneMenu>
+								<rich:message for="activo" id="msgActivo" />
+							</h:panelGroup>
+							
+							<h:outputText style="font-weight: bold;" value="* Observación:&#32;" />
+							<h:panelGroup>
+								<h:inputTextarea id="obsDetalle" value="#{bajaActivoController.detalleActivo.observacionBaja}"
+									style="width: 92%;" required="#{param['validar'] == '1'}"
+									requiredMessage="Campo requerido.">
+									<a4j:ajax render="msgObsDetalle obsDetalle" />
+								</h:inputTextarea>
+								<rich:message for="obsDetalle" id="msgObsDetalle" />
+							</h:panelGroup>
+							</h:panelGrid>
+							</div>
+						</h:panelGroup>
+						
+					</div>
+					<br />
+					<div align="center">
+						<h:panelGroup id="botonesAceptar">
+							<a4j:commandButton value="Aceptar"
+								render="activosLista bajaIngreso tablaActivos activo obsDetalle"
+								action="#{bajaActivoController.darBaja()}"
+								oncomplete="if(#{facesContext.maximumSeverity.ordinal!=2}) #{rich:component('bajaActivoPopup')}.hide()">
+								<a4j:param name="validar" value="1" />
+							</a4j:commandButton>
+							<a4j:commandButton value="Cancelar" execute="@this"
+								render="bajaIngreso tablaActivos" action="#{bajaActivoController.limpiarValores()}"
+								oncomplete="#{rich:component('bajaActivoPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+	</ui:define>
+</ui:composition>

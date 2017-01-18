@@ -1,0 +1,225 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedor.xhtml">
+	<ui:define name="titulo">
+        Carga Documentos Digitales
+    </ui:define>
+	<ui:define name="contenido">	
+		<br />
+		<h:panelGroup rendered="#{cargaDocumentoController.verFormulario}">
+			<h:form id="archivosActivoFrm">
+				<div style="width: 100%;" align="center">
+					<rich:panel style="width:90%">
+						<h:panelGrid columns="3" columnClasses="width30,width70," style="width:90%">
+							<h:outputText value="Serial del Activo:&#32;" style="font-weight: bold;" />
+							<h:panelGroup>
+								<h:inputText id="serialIt" value="#{cargaDocumentoController.serial}" style="width:95%" required="true" requiredMessage="Campo requerido" />
+								<rich:message for="serialIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+							</h:panelGroup>
+							<a4j:commandButton value="Buscar" action="#{cargaDocumentoController.buscarActivo()}" render="existeSerialOp, serialOp, archivosDt, botonIngreso" />
+						</h:panelGrid>
+					</rich:panel>
+					<br />
+					<a4j:outputPanel id="existeSerialOp">
+						<h:panelGroup rendered="#{cargaDocumentoController.existeSerial}">
+							<rich:panel style="width:90%">
+								<div style="width: 90%;">
+									<a4j:outputPanel id="serialOp">
+										<h:panelGrid columns="2" columnClasses="width30,width70" style="width:100%">
+											<h:outputLabel value="Serial del Activo: " style="font-weight: bold;" />
+											<h:outputLabel value="#{cargaDocumentoController.obtenerCadenaCortada(cargaDocumentoController.serial, 50)}" 
+												title="#{cargaDocumentoController.serial}" />
+											<h:outputLabel value="Tipo de Activo: " style="font-weight: bold;" />
+											<h:outputLabel value="#{cargaDocumentoController.detalleActivo.descripcionTipoActivo}" />
+										</h:panelGrid>
+									</a4j:outputPanel>
+									<br/>
+									<h:panelGroup>
+										<rich:dataTable id="archivosDt" var="detalle" 
+											value="#{cargaDocumentoController.listaArhivoActivo}" 
+										 	noDataLabel="No se han encontrado resultados con los datos ingresados"
+		            						onrowmouseover="this.style.backgroundColor='#FFFFE0'" 
+		            						rows="5" style="width:95%;background-color:#F7FDFC;" iterationStatusVar="it"
+											onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+			            					<f:facet name="header">
+			                					<h:outputText value="Archivos" />
+			            					</f:facet>
+			            					<rich:column>
+												<f:facet name="header">#</f:facet>
+			                					#{it.index+1}
+			            					</rich:column>
+			            					<rich:column>
+			            						<f:facet name="header">C&#243;digo</f:facet>
+			            						<h:outputText value="#{cargaDocumentoController.obtenerCadenaCortada(detalle.idArchivo, 25)}" title="#{detalle.idArchivo}" />
+			            					</rich:column>
+			            					<rich:column>
+			            						<f:facet name="header">Documento</f:facet>
+			            						<h:commandLink value="#{cargaDocumentoController.obtenerCadenaCortada(detalle.descripcion, 25)}" title="#{detalle.descripcion}"
+			            							action="#{cargaDocumentoController.verArchivo(detalle.idArchivo)}" target="_blank"/>
+			            					</rich:column>
+			            					<rich:column>
+				          						<f:facet name="header"></f:facet>
+				          						<center>
+				            						<a4j:commandLink action="#{cargaDocumentoController.actualizarArchivo(detalle)}"
+														oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('archivoDescripcionPp')}.show(); return false;" 
+														render="archivoDescripcionFrm:archivoDescripcionPgr"> 
+														<h:graphicImage value="/img/edit.gif" alt="Editar Descripci&#243;n Breve" title="Editar Descripci&#243;n" />
+													</a4j:commandLink>
+													&#160;
+													<a4j:commandLink action="#{cargaDocumentoController.actualizarArchivo(detalle)}"
+														oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('archivoContenidoPp')}.show(); return false;" 
+														render="archivoContenidoFrm:archivoContenidoPgr" rendered="#{detalle.tipo != 1}"> 
+														<h:graphicImage value="/img/folder.png" alt="Editar Contenido de Archivo" title="Editar Contenido de Archivo" />
+													</a4j:commandLink>
+												</center>
+											</rich:column>
+		            					</rich:dataTable>
+									</h:panelGroup>
+									<br/>
+									<div style="text-align: left;">
+										<h:outputLabel value="Los documentos que se carguen a continuaci&#243;n son propios del activo previamente indicado. Para reemplazar uno de los documentos existentes, debe cargar un documento con el mismo nombre."/>
+									</div>
+									<br/>
+									<h:panelGroup id="botonIngreso">
+										<a4j:commandLink value="Cargar Documento" render="activoIngresoFrm:activoIngreso" 
+											action="#{cargaDocumentoController.crearArchivo()}"
+											oncomplete="#{rich:component('activoPopup')}.show()"
+											rendered="#{cargaDocumentoController.listaArhivoActivo.size() lt 5}" />
+									</h:panelGroup>
+								</div>
+							</rich:panel>
+						</h:panelGroup>
+					</a4j:outputPanel>
+				</div>
+			</h:form>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not cargaDocumentoController.verFormulario}">
+			<h:outputText value="#{cargaDocumentoController.mensajeInstitucionError}" />
+		</h:panelGroup>
+		
+		<rich:popupPanel id="archivoDescripcionPp" header="Descripcion" width="600" autosized="true" modal="true" rendered="true">
+			<center>
+				<h:form id="archivoDescripcionFrm">
+					<h:panelGrid id="archivoDescripcionPgr" columns="3" columnClasses="width30,," style="width:90%">
+						<h:outputText value="* C&#243;digo Archivo:" style="font-weight: bold;" />
+						<h:outputText title="#{cargaDocumentoController.arhivoActivo.idArchivo}"  
+							value="#{cargaDocumentoController.obtenerCadenaCortada(cargaDocumentoController.arhivoActivo.idArchivo, 50)}" />
+						<h:outputLabel value="&#160;" />
+						<h:outputText value="* Descripci&#243;n breve:&#32;" style="font-weight:bold;" />
+						<h:inputText id="descripcionIt" value="#{cargaDocumentoController.arhivoActivo.descripcion}"
+							style="width:75%;" required="true" requiredMessage="Campo requerido" />
+						<rich:message for="descripcionIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+					</h:panelGrid>
+					<br />
+					<a4j:commandButton value="Guardar" action="#{cargaDocumentoController.guardarEdicionArchivo(0)}" 
+						oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('archivoDescripcionPp')}.hide();" render="archivosActivoFrm:archivosDt, archivoDescripcionPgr" />
+					&#160;
+			    	<a4j:commandButton value="Cancelar" onclick="#{rich:component('archivoDescripcionPp')}.hide(); return false;" immediate="true" />
+				</h:form>
+			</center>
+		</rich:popupPanel>
+		
+		<rich:popupPanel id="archivoContenidoPp" header="Archivo" width="600" autosized="true" modal="true" rendered="true">
+			<center>
+				<h:form id="archivoContenidoFrm">
+					<p>
+						<h:outputText value="Al realizar el reemplazo del archivo guardado, no se podr&#225; modificarlo una vez m&#225;s." />
+					</p>
+					<h:panelGrid id="archivoContenidoPgr" columns="2" columnClasses="width30," style="width:90%">
+						<h:outputText value="* C&#243;digo Archivo:" style="font-weight: bold;" />
+						<h:outputText title="#{cargaDocumentoController.arhivoActivo.idArchivo}" 
+							value="#{cargaDocumentoController.obtenerCadenaCortada(cargaDocumentoController.arhivoActivo.idArchivo, 50)}" />
+						<h:outputText value="* Documento (PDF):&#32;" style="font-weight:bold;" />
+						<rich:fileUpload id="archivoFu" doneLabel="Archivo cargado" allowFlash="true"
+							sizeExceededLabel="Tama&#241;o m&#225;ximo del archivo de 2MB" style="width:90%; height:90px;" 
+							acceptedTypes="pdf" ontyperejected="alert('Solo debe ingresar archivos en formato pdf');"
+							fileUploadListener="#{cargaDocumentoController.cargarArchivo}" maxFilesQuantity="1" addLabel="A&#241;adir" 
+							clearAllLabel="Borrar Archivo" uploadLabel="Cargar Archivo" clearLabel="Borrar" deleteLabel="Borrar" />
+					</h:panelGrid>
+					<br />
+					<a4j:commandButton value="Guardar" action="#{cargaDocumentoController.guardarEdicionArchivo(1)}" 
+						oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('archivoContenidoPp')}.hide();" render="archivosActivoFrm:archivosDt, archivoContenidoPgr" />
+					&#160;
+			    	<a4j:commandButton value="Cancelar" onclick="#{rich:component('archivoContenidoPp')}.hide(); return false;" immediate="true" />
+				</h:form>
+			</center>
+		</rich:popupPanel>
+		
+		<rich:popupPanel header="Ingreso Documento" id="activoPopup" modal="true" autosized="true" width="600" maxHeight="600">
+			<h:form id="activoIngresoFrm">
+				<h:panelGroup id="activoIngreso">
+					<center>
+						<h:panelGrid columns="2" columnClasses="width30,width70" style="width:90%">
+							<h:outputText value="* Descripci&#243;n breve:&#32;" style="font-weight:bold;" />
+							<h:panelGroup>
+								<h:inputText id="descripcion" value="#{cargaDocumentoController.arhivoActivo.descripcion}"
+									style="width:100%;" required="true" requiredMessage="Campo requerido." />
+								<rich:message for="descripcion" />
+							</h:panelGroup>
+
+							<h:outputText value="* Documento (PDF):&#32;" style="font-weight:bold;" />
+							<h:panelGroup>
+								<rich:fileUpload id="documento"
+									sizeExceededLabel="Tama&#241;o m&#225;ximo del archivo de 2MB"
+									fileUploadListener="#{cargaDocumentoController.cargarDocumento}"
+									disabled="#{cargaDocumentoController.exitoCarga!=null &#38;&#38; cargaDocumentoController.exitoCarga==1}"
+									style="width:100%; height:80px;" acceptedTypes="pdf"
+									allowFlash="false"
+									ontyperejected="alert('Solo debe ingresar archivos en formato pdf');"
+									maxFilesQuantity="1" addLabel="Añadir" clearAllLabel="Limpiar"
+									clearLabel="Borrar" deleteLabel="Borrar"
+									uploadLabel="Cargar Documentos">
+									<a4j:ajax event="uploadcomplete" render="documento opcionesCarga" />
+								</rich:fileUpload>
+								<label>&#32;</label>
+
+								<h:panelGroup id="opcionesCarga">
+									<h:panelGroup rendered="#{cargaDocumentoController.exitoCarga!=null}">
+										<b>
+											<h:outputLabel
+												rendered="#{cargaDocumentoController.exitoCarga!=null &#38;&#38;cargaDocumentoController.exitoCarga==1}"
+												value="#{cargaDocumentoController.mensajeCarga}"
+												style="color:#4682B4" /> 
+											<h:outputLabel
+												rendered="#{cargaDocumentoController.exitoCarga!=null &#38;&#38;cargaDocumentoController.exitoCarga==0}"
+												value="#{cargaDocumentoController.mensajeCarga}"
+												style="color:red" />
+										</b>
+										<br />
+										<h:panelGrid columns="2" style="width:70%">
+											<h:commandLink value="Visualizar documento" target="_blank"
+												action="#{cargaDocumentoController.verDocumento()}"
+												rendered="#{cargaDocumentoController.exitoCarga!=null &#38;&#38;cargaDocumentoController.exitoCarga==1}" />
+											<a4j:commandLink value="Remover"
+												rendered="#{cargaDocumentoController.exitoCarga!=null &#38;&#38;cargaDocumentoController.exitoCarga==1}"
+												action="#{cargaDocumentoController.quitarDocumento()}"
+												render="opcionesCarga documento" />
+										</h:panelGrid>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGrid>
+						<br />
+						<h:panelGroup id="botonesGuardarCancelar">
+							<a4j:commandButton value="Aceptar" 
+								render="existeSerialOp, serialOp, archivosDt, botonIngreso" action="#{cargaDocumentoController.guardarArchivo()}"
+								oncomplete="if(#{facesContext.maximumSeverity.ordinal!=2}) #{rich:component('activoPopup')}.hide()">
+								<a4j:param name="validar" value="1" />
+							</a4j:commandButton>
+							&#32;&#32;
+							<a4j:commandButton value="Cancelar" execute="@this"
+								render="activoIngreso"
+								action="#{cargaDocumentoController.eliminarArchivo()}"
+								oncomplete="#{rich:component('activoPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</center>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>

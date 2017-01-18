@@ -1,0 +1,493 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedorBloqueo.xhtml">
+	<ui:define name="titulo">
+        Reporte general
+    </ui:define>
+	<ui:define name="contenido">
+
+		<br />
+		<h:form>
+
+			<h:panelGroup>
+				<div style="width: 100%;" align="center">
+				<div style="width: 90%;padding-bottom: 10px;font-weight: bold" align="left"><small>Los campos con * son obligatorios</small></div>
+				
+					<rich:panel style="width:90%">
+
+						<h:panelGrid columns="2" columnClasses="width30,width70"
+							style="width:90%">
+							<h:outputText value="*Seleccione el tipo de reporte:&#32;"
+								style="font-weight: bold;" />
+							<h:panelGroup>
+								<h:selectOneRadio id="tipoReporte" required="true"
+									requiredMessage="El tipo de reporte ha generarse es obligatorio"
+									value="#{reporteActivosController.activarTotales}">
+									<a4j:ajax event="click"
+										listener="#{reporteActivosController.reiniciarValores()}"
+										render="zonaProvinciaLabel zonaProvinciaComb amieText amie estadoIEComb estadoIE tipoLab tipoLabComb estadoForm estadoFormComb
+										tipoLab tipoLabComb estadoLab estadoLabComb internetLab internetLabComb estadoAct estadoActComb cargaForm cargaFormCalendar
+										urbanoRuralText urbanoRuralComb activosLista opcionConsulta opcionConsultaComb mesConsulta mesConsultaComb distritoCantonLabel distritoCantonComb" />
+									<f:selectItem itemLabel="Detalle activos" itemValue="1" />
+									<f:selectItem itemLabel="Totales" itemValue="2" />
+									<f:selectItem itemLabel="Carga formulario" itemValue="3" />
+								</h:selectOneRadio>
+								<rich:message for="tipoReporte" />
+							</h:panelGroup>
+							<h:outputText value="Seleccione el tipo de consulta:&#32;"
+								style="font-weight: bold;" />
+							<h:panelGroup>
+								<h:selectOneRadio disabled="#{reporteActivosController.esZona &#124;&#124; reporteActivosController.esDistrito}"
+									value="#{reporteActivosController.consultaPolitica}">
+									<a4j:ajax event="click"
+										render="zonaProvinciaLabel zonaProvinciaComb amieText amie estadoIEComb estadoIE tipoLab tipoLabComb estadoForm estadoFormComb
+										tipoLab tipoLabComb estadoLab estadoLabComb internetLab internetLabComb estadoAct estadoActComb cargaForm cargaFormCalendar
+										urbanoRuralText urbanoRuralComb activosLista opcionConsulta opcionConsultaComb mesConsulta mesConsultaComb distritoCantonLabel distritoCantonComb"
+										listener="#{reporteActivosController.cargarListadoZonasProvincias()}" />
+									<f:selectItem itemLabel="Administrativa" itemValue="false" />
+									<f:selectItem itemLabel="Pol&#237;tica" itemValue="true" />
+								</h:selectOneRadio>
+							</h:panelGroup>
+
+							<h:panelGroup>
+								&#32;
+							</h:panelGroup>
+							<h:panelGroup>
+								&#32;
+							</h:panelGroup>
+
+							<h:panelGroup id="zonaProvinciaLabel">
+								<h:outputText value="Zona:&#32;" style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  !reporteActivosController.consultaPolitica}" />
+								<h:outputText value="Provincia:&#32;" style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.consultaPolitica}" />
+							</h:panelGroup>
+							<h:panelGroup id="zonaProvinciaComb">
+								<h:selectOneMenu id="zona"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  !reporteActivosController.consultaPolitica &#38;&#38; !(reporteActivosController.esZona &#124;&#124; reporteActivosController.esDistrito)}"
+									value="#{reporteActivosController.codigoZonaSenplades}"
+									style="width:54%">
+									<f:selectItem itemLabel="Todos..." noSelectionOption="true" />
+									<f:selectItems value="#{reporteActivosController.zonas}"
+										var="zone" itemLabel="#{zone.nombre}"
+										itemValue="#{zone.codigoSenplades}" />
+									<a4j:ajax execute="@this"
+										render="distritoCantonLabel distritoCantonComb"
+										listener="#{reporteActivosController.cargarListadoDistritosCantones()}" />
+								</h:selectOneMenu>
+								<h:outputText value="&#32;#{reporteActivosController.codigoZonaSenplades}" rendered="#{reporteActivosController.esZona &#124;&#124; reporteActivosController.esDistrito}" ></h:outputText>
+								<h:selectOneMenu id="provincia"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.consultaPolitica}"
+									value="#{reporteActivosController.codigoProvincia}"
+									style="width:54%">
+									<f:selectItem itemLabel="Todos..." noSelectionOption="true" />
+									<f:selectItems value="#{reporteActivosController.provincias}"
+										var="prov" itemLabel="#{prov.descripcion}"
+										itemValue="#{prov.codigo}" />
+									<a4j:ajax execute="@this"
+										render="distritoCantonLabel distritoCantonComb"
+										listener="#{reporteActivosController.cargarListadoDistritosCantones()}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+
+							<h:panelGroup id="distritoCantonLabel">
+								<h:outputText value="Distrito:&#32;" style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  !reporteActivosController.consultaPolitica}" />
+								<h:outputText value="Cant&#243;n:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.consultaPolitica}" />
+							</h:panelGroup>
+							<h:panelGroup id="distritoCantonComb">
+								<h:selectOneMenu id="distrito"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  !reporteActivosController.consultaPolitica &#38;&#38; !(reporteActivosController.esDistrito)}"
+									value="#{reporteActivosController.codigoDistrito}"
+									style="width:54%">
+									<f:selectItem itemLabel="Todos..." noSelectionOption="true" />
+									<f:selectItems value="#{reporteActivosController.distritos}"
+										var="dist" itemLabel="#{dist.nombre}"
+										itemValue="#{dist.codigoSenplades}" />
+									<a4j:ajax execute="@this" />
+								</h:selectOneMenu>
+								<h:outputText value="&#32;#{reporteActivosController.codigoDistrito}" rendered="#{reporteActivosController.esDistrito}" ></h:outputText>
+								<h:selectOneMenu id="canton"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.consultaPolitica}"
+									value="#{reporteActivosController.codigoCanton}"
+									disabled="#{reporteActivosController.codigoProvincia == null }"
+									style="width:54%">
+									<f:selectItem itemLabel="Todos..." noSelectionOption="true" />
+									<f:selectItems value="#{reporteActivosController.cantones}"
+										var="cant" itemLabel="#{cant.descripcion}"
+										itemValue="#{cant.codigo}" />
+									<a4j:ajax execute="@this" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+
+							<h:panelGroup id="estadoIE">
+								<h:outputText value="Estado IE:&#32;" style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null}" />
+							</h:panelGroup>
+							<h:panelGroup id="estadoIEComb">
+								<h:selectOneMenu value="#{reporteActivosController.estadoIE}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null}">
+									<f:selectItem itemLabel="Todos..." itemValue="-1" />
+									<f:selectItem itemValue="1" itemLabel="Activas" />
+									<f:selectItem itemValue="0" itemLabel="Inactivas" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+
+							<h:panelGroup id="urbanoRuralText">
+								<h:outputText value="IE Urbanas/rurales:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null}" />
+							</h:panelGroup>
+							<h:panelGroup id="urbanoRuralComb">
+								<h:selectOneMenu value="#{reporteActivosController.urbanoRural}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null}">
+									<f:selectItem itemLabel="Todos..." itemValue="-1" />
+									<f:selectItem itemValue="1" itemLabel="Urbanas" />
+									<f:selectItem itemValue="0" itemLabel="Rurales" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							
+							<!-- opciones reporte carga formularios -->
+							<h:panelGroup id="opcionConsulta">
+								<h:outputText value="*Opci&#243;n de consulta:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38; reporteActivosController.activarTotales == 3}" />
+							</h:panelGroup>
+							<h:panelGroup id="opcionConsultaComb">
+								<h:selectOneMenu id="opcConsult"
+									value="#{reporteActivosController.opcionConsultaCargaFormulario}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38; reporteActivosController.activarTotales == 3}"
+									required="true"
+									requiredMessage="La opci&#243;n de consulta es obligatoria">
+									<f:selectItem itemLabel="Seleccione..."  noSelectionOption="true"/>
+									<f:selectItem itemValue="1" itemLabel="Instituciones que han cargado el formulario" />
+									<f:selectItem itemValue="2" itemLabel="Instituciones que no han cargado el formulario" />
+									<f:selectItem itemValue="3" itemLabel="Instituciones que no han iniciado carga de formulario en el sistema" />
+									<a4j:ajax execute="@this"
+										render="mesConsultaComb" />
+								</h:selectOneMenu>
+								<rich:message for="opcConsult" />
+							</h:panelGroup>
+							<h:panelGroup id="mesConsulta">
+								<h:outputText value="*Mes de consulta:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38; reporteActivosController.activarTotales == 3}" />
+							</h:panelGroup>
+							<h:panelGroup id="mesConsultaComb">
+								<h:selectOneMenu id="mesConsult"
+									disabled="#{reporteActivosController.opcionConsultaCargaFormulario == null &#124;&#124; reporteActivosController.opcionConsultaCargaFormulario == 3}"
+									value="#{reporteActivosController.mesConsultar}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38; reporteActivosController.activarTotales == 3}"
+									required="true"
+									requiredMessage="El mes de consulta es obligatorio">
+									<f:selectItem itemLabel="Seleccione..."  noSelectionOption="true"/>
+									<f:selectItems value="#{reporteActivosController.mesesParametrizados}"
+										var="mes" itemLabel="#{mes.mes.valor}"
+										itemValue="#{mes.mes.ordenMes}" />
+									<a4j:ajax execute="@this" />
+								</h:selectOneMenu>
+								<rich:message for="mesConsult" />
+							</h:panelGroup>
+							<!-- fin de opciones reporte carga formularios  -->
+
+							<h:panelGroup id="amie">
+								<h:outputText value="AMIE:&#32;" style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}" />
+							</h:panelGroup>
+							<h:panelGroup id="amieText">
+								<h:inputText id="serialIt"
+									value="#{reporteActivosController.amie}" style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}" />
+							</h:panelGroup>
+
+							<h:panelGroup id="cargaForm">
+								<h:outputText value="Fecha de carga del formulario:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}" />
+							</h:panelGroup>
+							<h:panelGroup id="cargaFormCalendar">
+								<rich:calendar
+									value="#{reporteActivosController.fechaCargaFormulario}"
+									inputSize="25%" locale="es_ECU" datePattern="dd-MM-yyyy"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}">
+									<a4j:ajax render="@this" />
+								</rich:calendar>
+								<br />
+								<h:selectOneMenu
+									value="#{reporteActivosController.comparacionFechaCarga}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}">
+									<f:selectItem itemValue="="
+										itemLabel="Fecha de carga de formularios igual a la fecha seleccionada" />
+									<f:selectItem itemValue="&#60;"
+										itemLabel="Fecha de carga de formularios menor a la fecha seleccionada" />
+									<f:selectItem itemValue="&#62;"
+										itemLabel="Fecha de carga de formularios mayor a la fecha seleccionada" />
+									<f:selectItem itemValue="&#60;="
+										itemLabel="Fecha de carga de formularios menor e igual a la fecha seleccionada" />
+									<f:selectItem itemValue="&#62;="
+										itemLabel="Fecha de carga de formularios mayor e igual a la fecha seleccionada" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							
+							<h:panelGroup id="estadoForm">
+								<h:outputText value="Estado formularios:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}" />
+							</h:panelGroup>
+							<h:panelGroup id="estadoFormComb">
+								<h:selectOneMenu
+									value="#{reporteActivosController.estadoFormulario}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}">
+									<f:selectItem itemLabel="Todos..." itemValue="-1" />
+									<f:selectItem itemValue="1" itemLabel="Activos" />
+									<f:selectItem itemValue="0" itemLabel="Inactivos" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+
+							<h:panelGroup id="tipoLab">
+								<h:outputText value="Tipos laboratorios:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}" />
+							</h:panelGroup>
+							<h:panelGroup id="tipoLabComb">
+								<h:selectOneMenu
+									value="#{reporteActivosController.codigoTipoLaboratorio}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}">
+									<f:selectItem itemLabel="Todos..." itemValue="-1" />
+									<f:selectItems
+										value="#{reporteActivosController.tiposLaboratorios}"
+										var="tipo" itemLabel="#{tipo.descripcion}"
+										itemValue="#{tipo.codigo}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+
+							<h:panelGroup id="estadoLab">
+								<h:outputText value="Estado laboratorios:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}" />
+							</h:panelGroup>
+							<h:panelGroup id="estadoLabComb">
+								<h:selectOneMenu
+									value="#{reporteActivosController.laboratorioEnUso}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}">
+									<f:selectItem itemLabel="Todos..." itemValue="-1" />
+									<f:selectItem itemValue="1" itemLabel="En uso" />
+									<f:selectItem itemValue="0" itemLabel="Sin uso" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+
+							<h:panelGroup id="internetLab">
+								<h:outputText value="Conectividad laboratorios:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}" />
+							</h:panelGroup>
+							<h:panelGroup id="internetLabComb">
+								<h:selectOneMenu
+									value="#{reporteActivosController.tieneInternetLab}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}">
+									<f:selectItem itemLabel="Todos..." itemValue="-1" />
+									<f:selectItem itemValue="1" itemLabel="Presentan internet" />
+									<f:selectItem itemValue="0" itemLabel="Sin internet" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+
+							<h:panelGroup id="estadoAct">
+								<h:outputText value="Estado activo:&#32;"
+									style="font-weight: bold;"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}" />
+							</h:panelGroup>
+							<h:panelGroup id="estadoActComb">
+								<h:selectOneMenu
+									value="#{reporteActivosController.estadoActivoCompImp}"
+									style="width:54%"
+									rendered="#{reporteActivosController.consultaPolitica != null &#38;&#38;  reporteActivosController.activarTotales == 1}">
+									<f:selectItem itemLabel="Todos..." itemValue="-1" />
+									<f:selectItem itemValue="1" itemLabel="Funcionales/por reparar" />
+									<f:selectItem itemValue="0" itemLabel="Obsoletas" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+
+						</h:panelGrid>
+						<br />
+						<a4j:commandButton value="Generar reporte"
+							actionListener="#{reporteActivosController.generarReporte()}"
+							render="activosLista "></a4j:commandButton>
+					</rich:panel>
+					<br />
+					<h:panelGroup id="activosLista">
+
+						<h:panelGroup
+							rendered="#{reporteActivosController.reporte.size() != 0}">
+							<br />
+							<div align="left" style="width: 100%">
+								<h:panelGrid columns="2">
+									<h:graphicImage value="/img/excel.png"
+										alt="Reporte en Formato Excel"
+										title="Reporte en Formato Excel" height="40" width="40" />
+										<h:commandButton value="Exportar reporte a formato Excel" action="#{reporteActivosController.generarReporteTotal()}"/>
+								</h:panelGrid>
+							</div>
+							<br />
+						</h:panelGroup>
+
+						<rich:dataTable id="tablaActivos" var="detalle"
+							rendered="#{reporteActivosController.activarTotales != null}"
+							value="#{reporteActivosController.reporte}"
+							noDataLabel="No se han encontrado resultados con los datos ingresados"
+							onrowmouseover="this.style.backgroundColor='#FFFFE0'" rows="20"
+							style="width:100%;background-color:#F7FDFC;"
+							iterationStatusVar="it"
+							onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+							<rich:column>
+								<f:facet name="header">#</f:facet>
+               						#{it.index+1}
+            					</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">AMIE</f:facet>
+								<h:outputText value="#{detalle.amie}" />
+							</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">Fecha de carga</f:facet>
+								<h:outputText value="#{detalle.fechaCarga}">
+									<f:convertDateTime type="date" pattern="dd-MM-yyyy HH:mm:ss" />
+								</h:outputText>
+							</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">Nombre IE</f:facet>
+								<h:outputText value="#{detalle.nombreInstitucion}" />
+							</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">Estado IE</f:facet>
+								<h:outputText value="#{detalle.estadoIE}" />
+							</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">Zona</f:facet>
+								<h:outputText value="#{detalle.zona}" />
+							</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">Distrito</f:facet>
+								<h:outputText value="#{detalle.distrito}" />
+							</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">Provincia</f:facet>
+								<h:outputText value="#{detalle.provincia}" />
+							</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">Cant&#243;n</f:facet>
+								<h:outputText value="#{detalle.canton}" />
+							</rich:column>
+							<rich:column style="text-align:center" rendered="#{reporteActivosController.activarTotales != 3}">
+								<f:facet name="header">
+									<h:outputText value="Laboratorios"
+										rendered="#{reporteActivosController.activarTotales == 1}" />
+									<h:outputText value="Total laboratorios de tecnolog&#237;a"
+										rendered="#{reporteActivosController.activarTotales == 2}" />
+								</f:facet>
+								<h:outputText value="#{detalle.nombreLaboratorio}"
+									rendered="#{reporteActivosController.activarTotales == 1}" />
+								<h:outputText value="#{detalle.totalLaboratoriosTi}"
+									rendered="#{reporteActivosController.activarTotales == 2}" />
+							</rich:column>
+							<rich:column style="text-align:center" rendered="#{reporteActivosController.activarTotales != 3}">
+								<f:facet name="header">
+									<h:outputText value="Estado laboratorio"
+										rendered="#{reporteActivosController.activarTotales == 1}" />
+									<h:outputText value="Total computadoras TI"
+										rendered="#{reporteActivosController.activarTotales == 2}" />
+								</f:facet>
+								<h:outputText value="#{detalle.estadoLabTI}"
+									rendered="#{reporteActivosController.activarTotales == 1}" />
+								<h:outputText value="#{detalle.totalComputadoresTi}"
+									rendered="#{reporteActivosController.activarTotales == 2}" />
+							</rich:column>
+							<rich:column style="text-align:center" rendered="#{reporteActivosController.activarTotales != 3}">
+								<f:facet name="header">
+									<h:outputText value="Presenta internet"
+										rendered="#{reporteActivosController.activarTotales == 1}" />
+									<h:outputText
+										value="Total computadoras TI (funcionales / por reparar)"
+										rendered="#{reporteActivosController.activarTotales == 2}" />
+								</f:facet>
+								<h:outputText value="#{detalle.tieneInternetLabTI}"
+									rendered="#{reporteActivosController.activarTotales == 1}" />
+								<h:outputText value="#{detalle.totalComputadoresEnUsoTi}"
+									rendered="#{reporteActivosController.activarTotales == 2}" />
+							</rich:column>
+							<rich:column style="text-align:center" rendered="#{reporteActivosController.activarTotales != 3}">
+								<f:facet name="header">
+									<h:outputText value="Activo"
+										rendered="#{reporteActivosController.activarTotales == 1}" />
+									<h:outputText value="Total computadoras TI obsoletas"
+										rendered="#{reporteActivosController.activarTotales == 2}" />
+								</f:facet>
+								<h:outputText value="#{detalle.nombreActivo}"
+									rendered="#{reporteActivosController.activarTotales == 1}" />
+								<h:outputText value="#{detalle.totalComputadoresObsoletasTi}"
+									rendered="#{reporteActivosController.activarTotales == 2}" />
+							</rich:column>
+							<rich:column style="text-align:center" rendered="#{reporteActivosController.activarTotales != 3}">
+								<f:facet name="header">
+									<h:outputText value="Serial"
+										rendered="#{reporteActivosController.activarTotales == 1}" />
+									<h:outputText value="Total impresoras TI"
+										rendered="#{reporteActivosController.activarTotales == 2}" />
+								</f:facet>
+								<h:outputText value="#{detalle.serial}"
+									rendered="#{reporteActivosController.activarTotales == 1}" />
+								<h:outputText value="#{detalle.totalImpresorasTi}"
+									rendered="#{reporteActivosController.activarTotales == 2}" />
+							</rich:column>
+							<rich:column style="text-align:center" rendered="#{reporteActivosController.activarTotales != 3}">
+								<f:facet name="header">
+									<h:outputText value="Marca"
+										rendered="#{reporteActivosController.activarTotales == 1}" />
+									<h:outputText
+										value="Total impresoras TI (funcionales / por reparar)"
+										rendered="#{reporteActivosController.activarTotales == 2}" />
+								</f:facet>
+								<h:outputText value="#{detalle.marcaModelo}"
+									rendered="#{reporteActivosController.activarTotales == 1}" />
+								<h:outputText value="#{detalle.totalImpresorasEnUsoTi}"
+									rendered="#{reporteActivosController.activarTotales == 2}" />
+							</rich:column>
+							<rich:column style="text-align:center" rendered="#{reporteActivosController.activarTotales != 3}">
+								<f:facet name="header">
+									<h:outputText value="Estado activo"
+										rendered="#{reporteActivosController.activarTotales == 1}" />
+									<h:outputText value="Total impresoras TI obsoletas"
+										rendered="#{reporteActivosController.activarTotales == 2}" />
+								</f:facet>
+								<h:outputText value="#{detalle.estadoActivo}"
+									rendered="#{reporteActivosController.activarTotales == 1}" />
+								<h:outputText value="#{detalle.totalImpresorasObsoletasTi}"
+									rendered="#{reporteActivosController.activarTotales == 2}" />
+							</rich:column>
+
+							<f:facet name="footer">
+								<rich:dataScroller />
+							</f:facet>
+						</rich:dataTable>
+					</h:panelGroup>
+
+				</div>
+
+			</h:panelGroup>
+		</h:form>
+
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,134 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedor.xhtml">
+	<ui:define name="titulo">
+        Activos
+    </ui:define>
+	<ui:define name="contenido">
+	 
+		<br />
+		<h:form>
+			<div align="center">
+				<rich:panel style="width:80%" >
+					<a4j:commandButton value="Laboratorios" action="#{activosController.listarSalasLaboratorios(1)}" render="activoIngreso" oncomplete="#{rich:component('activoPopup')}.show()" style="width:30%"/>
+					<br/><br/>
+					<a4j:commandButton value="Salas de Clases" action="#{activosController.listarSalasLaboratorios(2)}" render="activoIngreso" oncomplete="#{rich:component('activoPopup')}.show()" style="width:30%"/>
+					<br/><br/>
+					<a4j:commandButton value="Biblioteca" action="#{activosController.listarSalasLaboratorios(3)}" render="activoIngreso" oncomplete="#{rich:component('activoPopup')}.show()" style="width:30%"/>
+					<br/><br/>
+					<a4j:commandButton value="Area Administrativa" action="#{activosController.listarSalasLaboratorios(4)}" render="activoIngreso" oncomplete="#{rich:component('activoPopup')}.show()" style="width:30%"/>
+				</rich:panel>
+			</div>
+		</h:form>
+		
+		
+		<rich:popupPanel id="activoPopup" modal="true" autosized="true"
+			width="600" maxHeight="600">
+			<f:facet name="header">
+				<h:outputText value="Ingreso de Seriales de Activos" />
+			</f:facet>
+			<h:form>
+				<h:panelGroup id="activoIngreso">
+				 	<div align="center">
+						<h:panelGrid columns="2" width="100%" columnClasses="width30,width70">
+							<h:panelGroup>
+								<b><h:outputLabel style="font-size: 12px;" value="* Laboratorio/Sala:" /></b>
+							</h:panelGroup>	
+							<h:panelGroup>
+								<h:selectOneMenu id="activoSalaLab"	
+									required="#{param['validar'] == '1'}"
+									value="#{activosController.laboratorioSala.codigo}"
+									requiredMessage="Campo obligatorio" style="width:54%">
+									<f:selectItem itemLabel="Seleccione..."
+										noSelectionOption="true" />
+									<f:selectItems value="#{activosController.listaLaboratorioSala}"
+										var="sala" itemLabel="#{activosController.obtenerDescripcion(sala.codigoTipo)}#{sala.nombreTipo}"
+										itemValue="#{sala.codigo}" />
+									<a4j:ajax render="activoSalaLab msgActivoSalLab tablaDetalleActivos activo activoIngreso tipoActivoPgr"
+										listener="#{activosController.limpiarBusqueda()}" event="change"/>
+								</h:selectOneMenu>
+								<rich:message for="activoSalaLab" id="msgActivoSalLab" />
+							</h:panelGroup>	
+							
+							<h:panelGroup>
+								<b><h:outputLabel style="font-size: 12px;" value="* Tipo de Activo:" /></b>
+							</h:panelGroup>	
+							<h:panelGroup id="tipoActivoPgr">
+								<h:selectOneMenu id="activo" 
+									required="#{param['validar'] == '1'}"
+									value="#{activosController.tipoActivo.codigo}"
+									requiredMessage="Campo obligatorio" style="width:54%">
+									<f:selectItem itemLabel="Seleccione..."
+										noSelectionOption="true" />
+									<f:selectItems value="#{activosController.tiposActivos}"
+										var="act" itemLabel="#{act.descripcion}"
+										itemValue="#{act.codigo}" />
+									<a4j:ajax execute="@this" render="activoSalaLab activo msgActivo tablaDetalleActivos" listener="#{activosController.listarDetallesActivos()}"/>
+								</h:selectOneMenu>
+								<rich:message for="activo" id="msgActivo" />
+							</h:panelGroup>	
+						</h:panelGrid>
+						<br/>
+						<br/>
+						<h:panelGroup id="serialRep">
+							<h:panelGroup id="serialPg" rendered="#{not empty activosController.serialRepetidoMensaje}">
+								<div style="width: 90%; text-align: left;">
+									<h:outputText value="#{activosController.serialRepetidoMensaje}" style="color: red;" />
+								</div>
+								<br/>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:panelGroup>
+								 <rich:dataTable id="tablaDetalleActivos" var="detalle" 
+									value="#{activosController.listaDetalleActivo}" 
+								 	noDataLabel="No se han encontrado resultados con los datos ingresados"
+            						onrowmouseover="this.style.backgroundColor='#FFFFE0'" 
+            						rows="12" style="width:95%;background-color:#F7FDFC;" iterationStatusVar="it"
+									onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+					  				<rich:column>
+										<f:facet name="header">#</f:facet>
+	                					#{it.index+1}
+	            					</rich:column>
+	            					<rich:column style="width:285px;">
+	            						<f:facet name="header">Serial</f:facet>
+	            						<h:outputText value="#{activosController.obtenerSerialCortado(detalle.serial, 50)}" title="#{detalle.serial}" />
+	            					</rich:column>
+	            					<rich:column>
+	            						<f:facet name="header">Valor a actualizar</f:facet>
+	            						<h:inputText value="#{detalle.serialActualizado}" style="width:95%" maxlength="50">
+	            							<a4j:ajax render="@this"/>
+	            						</h:inputText>
+	            					</rich:column>
+	            					 <f:facet name="footer">
+	                					<rich:dataScroller for="tablaDetalleActivos" />
+	            					</f:facet>
+            					</rich:dataTable>
+							</h:panelGroup>
+						</h:panelGroup>
+					</div>
+					<br />
+					<div align="center">
+						<h:panelGroup id="botonesGuardarCancelar">
+							<a4j:commandButton value="Guardar" render="activoIngreso serialRep"
+								action="#{activosController.guardarSeriales()}"
+								oncomplete="if(#{facesContext.maximumSeverity.ordinal!=2} &#38;&#38; #{empty activosController.serialRepetidoMensaje}) #{rich:component('activoPopup')}.hide()">
+								<a4j:param name="validar" value="1" />
+							</a4j:commandButton>
+							&#32;&#32;
+							<a4j:commandButton value="Cancelar" execute="@this"
+								render="activoIngreso"
+								oncomplete="#{rich:component('activoPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+	</ui:define>
+</ui:composition>

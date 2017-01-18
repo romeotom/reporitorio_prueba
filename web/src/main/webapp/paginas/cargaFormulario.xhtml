@@ -1,0 +1,177 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedorBloqueo.xhtml">
+
+	<ui:define name="titulo">
+        Cargar Formulario Generado
+    </ui:define>
+
+	<ui:define name="contenido">
+		<h:form>
+		
+		<h:panelGroup rendered="#{cargaArchivoController.mesesParametrizados.size() == 0}">
+				<br />
+				<div style="width: 100%;" align="justify">
+					<div class="danger">
+						<span>No se han encontrado meses de carga. Por favor comun&#237;quese con el administrador del sistema.</span>
+					</div>
+				</div>
+		</h:panelGroup>
+		
+		<h:panelGroup id="mensajeNoCargados">
+			<h:panelGroup
+				rendered="#{cargaArchivoController.mesesNoCargados.size() > 0 }">
+				<br />
+				<div style="width: 100%;" align="justify">
+					<div class="danger">
+
+						<span>No se han realizado la carga de formularios para los
+							siguientes meses:</span>
+						<rich:list value="#{cargaArchivoController.mesesNoCargados}"
+							var="mes" styleClass="text-danger" rowClass="text-danger">
+							<h:outputText value="#{mes.mes.valor}" />
+						</rich:list>
+
+					</div>
+				</div>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{not empty cargaArchivoController.mensajeError}">
+				<br />
+				<div style="width: 100%;" align="justify">
+					<div class="danger">
+						<span>#{cargaArchivoController.mensajeError}</span>
+					</div>
+				</div>
+			</h:panelGroup>
+			</h:panelGroup>
+			<br />
+			<br />
+
+			<fieldset>
+				<legend>
+					<b>Formulario</b>
+				</legend>
+				<h:panelGroup rendered="#{cargaArchivoController.verFormulario}">
+
+					<div style="width: 100%;" align="center">
+						<div style="width: 80%" align="center">
+							<h:panelGroup>
+								<br />
+								<div style="width: 100%;" align="justify">
+									<div class="info">
+										<h:outputText value="Recuerde:" />
+										<ul>
+											<li>Debe realizarse la carga de formularios para los
+												siguientes meses: <rich:list
+													value="#{cargaArchivoController.mesesParametrizados}"
+													var="mes" styleClass="text-info" rowClass="text-info">
+													<h:outputText value="#{mes.mes.valor}" />
+												</rich:list>
+											</li>											
+											<li>El sistema permite cargar indefinidamente un formulario, siempre y 
+											cuando no haya sido generado en un mismo d&#237;a.</li>
+											<li>Si no ha realizado la carga de un formulario en uno
+												o m&#225;s meses, el sistema emitir&#225; una advertencia de
+												carga.</li>
+											<li>Si al momento de cargar el formulario, existen meses pendientes en la carga, el sistema
+											considerar&#225; dicho formulario para los meses en conflicto.</li>
+										</ul>
+									</div>
+								</div>
+								<br />
+							</h:panelGroup>
+							<br />
+							<rich:panel style="width:100%">
+								<h:panelGrid columns="2" columnClasses="width30-upload-file, width70"
+									style="width:100%">
+									<h:outputText value="Carga y guardado de formulario:"/>
+									<h:panelGroup>
+										<rich:fileUpload id="formularioFu"
+											doneLabel=" " allowFlash="true"
+											sizeExceededLabel="Tama&#241;o m&#225;ximo del archivo de 2MB"
+											style="width:90%; height:73px;" acceptedTypes="zip"
+											ontyperejected="alert('Solo debe ingresar archivos en formato zip');"
+											fileUploadListener="#{cargaArchivoController.cargarFormulario}"
+											maxFilesQuantity="1" addLabel="A&#241;adir formulario"
+											clearAllLabel="Borrar formulario"
+											uploadLabel="Cargar formulario" clearLabel="Borrar"
+											deleteLabel="Borrar"
+											disabled="#{cargaArchivoController.deshabilitarCargar &#124;&#124; cargaArchivoController.mesesParametrizados.size() == 0}">
+											<a4j:ajax event="uploadcomplete"
+												render="guardarBtn, mensajeNoCargados" />
+										</rich:fileUpload>
+									</h:panelGroup>
+									<h:outputText value="" />
+									<h:panelGroup>
+										<a4j:commandButton id="guardarBtn" value="Guardar el formulario en el sistema"
+											action="#{cargaArchivoController.guardarFormulario}"
+											onclick="this.disabled = true;"
+											disabled="#{cargaArchivoController.deshabilitarGuardar}"
+											render="guardarBtn, formularioFu, tablaFormularios, mensajeNoCargados" />
+									</h:panelGroup>
+								</h:panelGrid>
+								<br />
+							</rich:panel>
+						</div>
+					</div>
+
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not cargaArchivoController.verFormulario}">
+					<h:outputText
+						value="#{cargaArchivoController.mensajeInstitucionError}" />
+				</h:panelGroup>
+			</fieldset>
+			<br />
+			<br />
+			<fieldset>
+				<legend>
+					<b>Listado de formularios cargados para el a&#241;o #{cargaArchivoController.anio}</b>
+				</legend>
+				<div style="width: 100%;">
+					<rich:dataTable id="tablaFormularios" var="detalle"
+						value="#{cargaArchivoController.mesesParametrizados}"
+						noDataLabel="No se han encontrado formularios para la instituci&#243;n"
+						onrowmouseover="this.style.backgroundColor='#FFFFE0'"
+						style="width:100%;background-color:#F7FDFC;"
+						onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+						<f:facet name="header">
+						Instituci&#243;n #{cargaArchivoController.insInstitucion.amie}
+						</f:facet>
+						<rich:column style="text-align:center">
+							<f:facet name="header">Mes</f:facet>
+							<h:outputText value="#{detalle.mes.valor}" />
+						</rich:column>
+						<rich:column style="text-align:center">
+							<f:facet name="header">Estado</f:facet>
+							<h:outputText rendered="#{detalle.existeFormulario}" value="Cargado" />
+							<h:outputText rendered="#{!detalle.existeFormulario}" value="Sin carga" />
+						</rich:column>
+						<rich:column style="text-align:center">
+							<f:facet name="header">Archivo cargado</f:facet>
+							<h:outputText rendered="#{detalle.existeFormulario}" value="#{detalle.archivoFisico}" />
+							<h:outputText rendered="#{!detalle.existeFormulario}" value="---" />
+						</rich:column>
+						<rich:column style="text-align:center">
+							<f:facet name="header">Fecha carga en Online</f:facet>
+							<h:outputText rendered="#{detalle.existeFormulario}" value="#{detalle.fechaCargaOnLine}">
+								<f:convertDateTime type="date" pattern="dd-MM-yyyy HH:mm:ss" />
+							</h:outputText>
+							<h:outputText rendered="#{!detalle.existeFormulario}" value="---" />
+						</rich:column>
+						<rich:column style="text-align:center">
+							<f:facet name="header">Fecha levantamiento en Offline</f:facet>
+							<h:outputText rendered="#{detalle.existeFormulario}" value="#{detalle.fechaLevantamiento}">
+								<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+							</h:outputText>
+							<h:outputText rendered="#{!detalle.existeFormulario}" value="---" />
+						</rich:column>
+					</rich:dataTable>
+				</div>
+			</fieldset>
+		</h:form>
+	</ui:define>
+</ui:composition>

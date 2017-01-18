@@ -1,0 +1,53 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedorBloqueo.xhtml">
+	<ui:define name="titulo">
+        Parametrizaci&#243;n de meses para carga de formularios
+    </ui:define>
+	<ui:define name="contenido">
+		<br />
+		<h:form>
+			<div style="width: 100%;" align="center">
+				<br />
+				<h:panelGroup id="mesesLista">
+					<rich:panel style="width:90%">
+					<div style="width: 100%;" align="left">
+					<b><h:outputText style="font-size:12px" value="Seleccione los meses de carga de formularios de activos teconol&#243;gicos para el a&#241;o #{parametrizacionMesesController.anio}" /></b>
+						<br/><br/><br/>
+						</div>
+						<div style="width: 100%;">
+							<rich:dataTable id="tablaMeses" var="detalle" 
+								value="#{parametrizacionMesesController.meses}" 
+							 	noDataLabel="No se han encontrado resultados con los datos ingresados"
+           						onrowmouseover="this.style.backgroundColor='#FFFFE0'" iterationStatusVar="it"
+           						rows="20" style="width:50%;background-color:#F7FDFC;"
+								onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+            					<rich:column style="width:15%; text-align:center" >
+            						<f:facet name="header"></f:facet>
+									<h:selectBooleanCheckbox disabled="#{detalle.deshabilitado}" 
+										value="#{detalle.mesSeleccionado}" >
+										<a4j:ajax  render="tablaMeses"
+										 listener="#{parametrizacionMesesController.actualizarMesParametrizado(it.index)}"/>
+									</h:selectBooleanCheckbox>
+									<rich:tooltip id="tt1" styleClass="tooltip" layout="block" rendered="#{detalle.deshabilitado}">
+										<span style="white-space: nowrap"> Mes deshabilitado, por tener formularios cargados.
+										</span>
+									</rich:tooltip>
+								</rich:column>
+            					<rich:column style="text-align:center" >
+            						<f:facet name="header">Mes</f:facet>
+            						<h:outputText value="#{detalle.valor}" />
+            					</rich:column>
+           					</rich:dataTable>
+						</div>
+					</rich:panel>
+				</h:panelGroup>
+			</div>
+		</h:form>
+		
+	</ui:define>
+</ui:composition>

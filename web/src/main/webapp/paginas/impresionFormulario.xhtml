@@ -1,0 +1,114 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:reportes="http://java.sun.com/jsf/composite/visor"
+	template="/plantillas/contenedorBloqueo.xhtml">
+
+	<ui:define name="titulo">
+       Formularios de Activos Tecnol&#243;gicos 
+    </ui:define>
+
+	<ui:define name="contenido">
+		<br />
+		<h:panelGroup rendered="#{impresionFormularioController.verFormulario}">
+			<h:form>
+			<!-- 
+				<div style="width: 100%;" align="center">
+					<div style="width: 80%" align="center">
+						<rich:panel style="width:100%">
+							<h:panelGrid columns="2" columnClasses="width30, width70" style="width:90%">
+								<h:outputText value="A&#241;o de Formulario:" style="font-weight: bold;" />
+								<h:selectOneMenu id="anioSom" value="#{impresionFormularioController.anioSeleccionado}">
+									<f:selectItem itemLabel="Seleccione..." itemValue="0" />
+									<f:selectItems value="#{impresionFormularioController.anios}" var="item" itemValue="#{item}" itemLabel="#{item}" />
+									<a4j:ajax listener="#{impresionFormularioController.cargarParametros()}" render="visorOp" />
+								</h:selectOneMenu>
+							</h:panelGrid>
+						</rich:panel>
+					</div>
+				</div>
+				<br />
+				<br />
+				<a4j:outputPanel id="visorOp">
+					<reportes:visorjasper5.2_alt source="Activos/Formulario/formulario_activos_seriales" params="#{impresionFormularioController.parametros}" />
+				</a4j:outputPanel> -->
+				
+				<h:panelGroup id="mensajeErrorImprimForm">
+				<h:panelGroup
+					rendered="#{errorImpresion}">
+					<br />
+					<div style="width: 100%;" align="justify">
+						<div class="danger">
+							<span>El formulario seleccionado presenta inconvenientes. Intente con otro formulario o comun&#237;quese con el administrador del sistema.</span>
+						</div>
+					</div>
+				</h:panelGroup>
+				</h:panelGroup>
+
+				<br />
+				<div style="width: 100%;">
+					<rich:dataTable id="tablaFormularios" var="detalle"
+						value="#{impresionFormularioController.formulariosInstitucion}"
+						noDataLabel="No se han encontrado formularios para la instituci&#243;n"
+						onrowmouseover="this.style.backgroundColor='#FFFFE0'" rows="20" 
+						style="width:100%;background-color:#F7FDFC;"
+						iterationStatusVar="it"
+						onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+						<f:facet name="header">
+						Instituci&#243;n #{impresionFormularioController.insInstitucion.amie}
+						</f:facet>
+						<rich:column style="width:5%">
+							<f:facet name="header">#</f:facet>
+               						#{it.index+1}
+            					</rich:column>
+						<rich:column style="text-align:center; width:10%">
+							<f:facet name="header">A&#241;o</f:facet>
+							<h:outputText value="#{detalle.anio}" />
+						</rich:column>
+						<rich:column style="text-align:center; width:20%">
+							<f:facet name="header">Archivo cargado</f:facet>
+							<h:outputText value="#{detalle.idArchivo}" style="font-size:10px;"/>
+						</rich:column>
+						<rich:column style="text-align:center; width:15%">
+							<f:facet name="header">Fecha carga en Online</f:facet>
+							<h:outputText value="#{detalle.fechaCarga}">
+								<f:convertDateTime type="date" pattern="dd-MM-yyyy HH:mm:ss" />
+							</h:outputText>
+						</rich:column>
+						<rich:column style="text-align:center; width:15%">
+							<f:facet name="header">Fecha levantamiento en Offline</f:facet>
+							<h:outputText value="#{detalle.fechaLevantamiento}">
+								<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</rich:column>
+						<rich:column style="text-align:center; width:10%">
+							<f:facet name="header">Estado</f:facet>
+							<h:outputText rendered="#{detalle.estado == 0}" value="Inactivo" />
+							<h:outputText rendered="#{detalle.estado == 1}" value="Activo" />
+						</rich:column>
+						<rich:column style="text-align:center; width:15%">
+							<f:facet name="header">Responsable Distrito</f:facet>
+							<h:outputText value="#{detalle.responsableDistrito}" />
+						</rich:column>
+						<rich:column style="width:10%">
+							<f:facet name="header"></f:facet>
+							<center>
+							<h:commandLink value="Generar formulario" action="#{impresionFormularioController.generarReporte(detalle)}" target="_blank" style="font-size:11px;font-weight:bold" >
+							</h:commandLink>
+							</center>
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller />
+						</f:facet>
+					</rich:dataTable>
+				</div>
+			</h:form>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not impresionFormularioController.verFormulario}">
+			<h:outputText value="#{impresionFormularioController.mensajeInstitucionError}" />
+		</h:panelGroup>
+	</ui:define>
+</ui:composition>

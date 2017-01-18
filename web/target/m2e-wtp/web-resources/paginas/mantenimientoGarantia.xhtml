@@ -1,0 +1,393 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedorBloqueo.xhtml">
+	<ui:define name="titulo">
+        Mantenimiento / Garant&#237;a
+    </ui:define>
+	<ui:define name="contenido">
+		<script type="text/javascript">
+    		/* <![CDATA[ */
+		    function stopEnterKey(evt) {
+				var evt = (evt) ? evt : ((event) ? event : null);
+				var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
+				if ((evt.keyCode == 13) && (node.type=="text"))  { return false; } 
+			}
+			document.onkeypress = stopEnterKey;
+			
+		    function validateQty(event) {
+			    var key = window.event ? event.keyCode : event.which;
+				if (event.keyCode == 8 || event.keyCode == 46 || event.keyCode == 37 || event.keyCode == 39) {
+				    return true;
+				} else if ( key < 48 || key > 57 ) {
+				    return false;
+				} else {
+					return true;
+				}
+			}
+		    /* ]]> */
+		</script>
+		
+		<br />
+		<h:form>
+		<h:panelGroup rendered="#{!mantenimientoGarantiaController.esUsuarioInstitucion}">
+			<h:outputText value="El usuario que ha iniciado sesi&#243;n no es una instituci&#243;n educativa." />
+		</h:panelGroup>
+		<h:panelGroup rendered="#{mantenimientoGarantiaController.esUsuarioInstitucion}">
+			<div style="width: 100%;" align="center">
+				<rich:panel style="width:90%">
+					<h:panelGrid columns="3" columnClasses="width30,width70," style="width:90%">
+						<h:outputText value="Serial del Activo:&#32;" style="font-weight: bold;" />
+						<h:panelGroup>
+							<h:inputText id="serialIt" value="#{mantenimientoGarantiaController.serial}" style="width:95%" required="true" requiredMessage="Campo requerido" />
+							<rich:message for="serialIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+						</h:panelGroup>
+						<a4j:commandButton value="Buscar" action="#{mantenimientoGarantiaController.buscarActivo()}" render="activosLista tablaActivos" />
+					</h:panelGrid>
+				</rich:panel>
+				<br />
+				<h:panelGroup id="activosLista">
+					<rich:panel style="width:90%">
+						<div style="width: 100%;">
+							<rich:dataTable id="tablaActivos" var="detalle" 
+								value="#{mantenimientoGarantiaController.listaDetalleActivo}" 
+							 	noDataLabel="No se han encontrado resultados con los datos ingresados"
+           						onrowmouseover="this.style.backgroundColor='#FFFFE0'" 
+           						rows="20" style="width:90%;background-color:#F7FDFC;" iterationStatusVar="it"
+								onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+								<rich:column style="width:3%;">
+									<f:facet name="header">#</f:facet>
+               						#{it.index+1}
+            					</rich:column>
+            					<rich:column style="width:30%; text-align:center" >
+            						<f:facet name="header">Asignado</f:facet>
+            						<h:outputText value="#{mantenimientoGarantiaController.obtenerDescripcion(detalle.actLaboratorioSala.codigoTipo)}#{detalle.actLaboratorioSala.nombreTipo}" />
+            					</rich:column>
+            					<rich:column style="width:25%; text-align:center">
+            						<f:facet name="header">Tipo</f:facet>
+            						<h:outputText value="#{detalle.descripcionTipoActivo}" />
+            					</rich:column>
+            					<rich:column style="width:30%; text-align:center">
+            						<f:facet name="header">Serial</f:facet>
+            						<h:outputText value="#{mantenimientoGarantiaController.obtenerCadenaCortada(detalle.serial, 50)}" title="#{detalle.serial}" />
+            					</rich:column>
+            					<rich:column style="width:12%;">
+	          						<f:facet name="header"></f:facet>
+	          						<center>
+	            						<a4j:commandLink render="mantenimientoIngreso" oncomplete="#{rich:component('mantenimientoPopup')}.show()" 
+	            							action="#{mantenimientoGarantiaController.tomarActivo(detalle)}">
+	            							<h:graphicImage value="/img/maintenance.png" alt="Mantenimiento" title="Mantenimiento" />
+										</a4j:commandLink>
+										&#160;
+										<a4j:commandLink render="garantiaIngreso" oncomplete="#{rich:component('garantiaPopup')}.show()"
+											action="#{mantenimientoGarantiaController.tomarActivo(detalle)}">
+	            							<h:graphicImage value="/img/warranty.png" alt="Garantía" title="Garantía" />
+										</a4j:commandLink>
+									</center>
+								</rich:column>
+								<f:facet name="footer">
+                					<rich:dataScroller />
+            					</f:facet>
+           					</rich:dataTable>
+						</div>
+					</rich:panel>
+				</h:panelGroup>
+			</div>
+			</h:panelGroup>
+		</h:form>
+
+		<rich:popupPanel id="mantenimientoPopup" modal="true" autosized="true"
+			width="600" maxHeight="600">
+			<f:facet name="header">
+				<h:outputText value="Mantenimiento" />
+			</f:facet>
+			<h:form>
+				<h:panelGroup id="mantenimientoIngreso">
+					<div align="center">
+					<rich:panel style="width:80%">
+						<h:panelGrid columns="2" columnClasses="width30,width70" style="width:90%">
+							<h:panelGroup>
+								<b><h:outputText value="Tipo de Activo:&#32;" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:outputText value="#{mantenimientoGarantiaController.detalleActivo.descripcionTipoActivo}" />
+							</h:panelGroup>
+							<h:panelGroup>
+								<b><h:outputText value="Serial del Activo:&#32;" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:outputText value="#{mantenimientoGarantiaController.obtenerCadenaCortada(mantenimientoGarantiaController.detalleActivo.serial, 50)}" title="#{mantenimientoGarantiaController.detalleActivo.serial}" />
+							</h:panelGroup>
+						</h:panelGrid>
+					</rich:panel>
+						<br/><b>
+						<a4j:commandLink value="Nuevo registro de mantenimiento" render="matenimientoNuevoIngreso  tablaMantenimientoActivos"
+								action="#{mantenimientoGarantiaController.nuevoMantenimiento()}"
+								oncomplete="#{rich:component('ingresoMantenimientoPopup')}.show()">
+							</a4j:commandLink></b>
+						<br/><br/><br/>
+						<h:panelGroup>
+							<rich:dataTable id="tablaMantenimientoActivos" var="mant" 
+									value="#{mantenimientoGarantiaController.listaMantenimiento}" 
+								 	noDataLabel="No se han encontrado resultados con los datos ingresados"
+            						onrowmouseover="this.style.backgroundColor='#FFFFE0'" 
+            						rows="20" style="width:80%;background-color:#F7FDFC;" iterationStatusVar="it"
+									onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+								<rich:column>
+									<f:facet name="header">#</f:facet>
+               							 #{it.index+1}
+            					</rich:column>
+            					<rich:column>
+            						<f:facet name="header">Detalle</f:facet>
+            						<h:outputText value="#{mantenimientoGarantiaController.obtenerCadenaCortada(mant.descripcion, 20)}" title="#{mant.descripcion}" />
+            					</rich:column>
+            					<rich:column>
+            						<f:facet name="header">Fecha</f:facet>
+            						<h:outputText value="#{mant.fecha}" >
+            							<f:convertDateTime type="date" pattern="dd-MM-yyyy"/>
+            						</h:outputText>
+            					</rich:column>
+            					<rich:column>
+	          						<f:facet name="header"></f:facet>
+            						<a4j:commandLink render="matenimientoNuevoIngreso" oncomplete="#{rich:component('ingresoMantenimientoPopup')}.show()" action="#{mantenimientoGarantiaController.tomarMantenimiento(mant)}">
+										<h:graphicImage value="/img/edit.gif" alt="Editar"  title="Editar"/>						
+									</a4j:commandLink>
+								</rich:column>
+								<f:facet name="footer">
+                					<rich:dataScroller />
+            					</f:facet>
+            					</rich:dataTable>
+						</h:panelGroup>
+						
+					</div>
+					<br />
+					<div align="center">
+						<h:panelGroup id="botonesAceptar">
+							<a4j:commandButton value="Aceptar" execute="@this"
+								render="mantenimientoIngreso tablaActivos"
+								oncomplete="#{rich:component('mantenimientoPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		
+		<rich:popupPanel id="garantiaPopup" modal="true" autosized="true"
+			width="600" maxHeight="600">
+			<f:facet name="header">
+				<h:outputText value="Garantía" />
+			</f:facet>
+			<h:form>
+				<h:panelGroup id="garantiaIngreso">
+					<div align="center">
+					<rich:panel style="width:80%">
+						<h:panelGrid columns="2" columnClasses="width30,width70"
+							style="width:90%">
+							<h:panelGroup>
+								<b><h:outputText value="Tipo de Activo:&#32;" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:outputText value="#{mantenimientoGarantiaController.detalleActivo.descripcionTipoActivo}" />
+							</h:panelGroup>
+							<h:panelGroup>
+								<b><h:outputText value="Serial del Activo:&#32;" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:outputText value="#{mantenimientoGarantiaController.obtenerCadenaCortada(mantenimientoGarantiaController.detalleActivo.serial, 50)}" title="#{mantenimientoGarantiaController.detalleActivo.serial}" />
+							</h:panelGroup>
+						</h:panelGrid>
+					</rich:panel>
+						<br/><b>
+						<a4j:commandLink value="Nuevo registro de garantía" render="matenimientoNuevoIngreso  tablaMantenimientoActivos"
+								action="#{mantenimientoGarantiaController.nuevaGarantia()}"
+								oncomplete="#{rich:component('ingresoGarantiaPopup')}.show()">
+							</a4j:commandLink></b>
+						<br/><br/><br/>
+						<h:panelGroup>
+							<rich:dataTable id="tablaGarantiaActivos" var="gar" 
+									value="#{mantenimientoGarantiaController.listaGarantia}" 
+								 	noDataLabel="No se han encontrado resultados con los datos ingresados"
+            						onrowmouseover="this.style.backgroundColor='#FFFFE0'" 
+            						rows="20" style="width:80%;background-color:#F7FDFC;" iterationStatusVar="it"
+									onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+								<rich:column>
+									<f:facet name="header">#</f:facet>
+               							 #{it.index+1}
+            					</rich:column>
+            					<rich:column>
+            						<f:facet name="header">Fecha Inicio</f:facet>
+            						<h:outputText value="#{gar.fecha}">
+            							<f:convertDateTime type="date" pattern="dd-MM-yyyy"/>
+            						</h:outputText>
+            					</rich:column>
+            					<rich:column>
+            						<f:facet name="header">Duración</f:facet>
+            						<h:outputText value="#{gar.duracion}  #{mantenimientoGarantiaController.buscarDescripcionDuracion(gar.codigoTipoDuracion)}" />
+            					</rich:column>            					
+            					<rich:column>
+	          						<f:facet name="header"></f:facet>
+            						<a4j:commandLink render="garantiaNuevoIngreso" oncomplete="#{rich:component('ingresoGarantiaPopup')}.show()" action="#{mantenimientoGarantiaController.tomarGarantia(gar)}">
+										<h:graphicImage value="/img/edit.gif" alt="Editar"  title="Editar" />						
+									</a4j:commandLink>
+								</rich:column>
+								<f:facet name="footer">
+                					<rich:dataScroller />
+            					</f:facet>
+            					</rich:dataTable>
+						</h:panelGroup>
+						
+					</div>
+					<br />
+					<div align="center">
+						<h:panelGroup id="botonesAceptarGar">
+							<a4j:commandButton value="Aceptar" execute="@this"
+								render="garantiaIngreso tablaActivos"
+								oncomplete="#{rich:component('garantiaPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<rich:popupPanel id="ingresoMantenimientoPopup" modal="true" autosized="true"
+			width="570" maxHeight="600">
+			<f:facet name="header">
+				<h:outputText value="Registro de mantenimiento" />
+			</f:facet>
+			<h:form>
+				<h:panelGroup id="matenimientoNuevoIngreso">
+					<div align="center">
+						<h:panelGrid columns="2" columnClasses="width30,width70"
+							style="width:90%">
+							<h:panelGroup>
+								<b><h:outputText value="*Fecha de Mantenimiento:&#32;" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<rich:calendar id="fechaManten"
+								value="#{mantenimientoGarantiaController.mantenimiento.fecha}"
+								inputSize="25%" locale="es_ECU" 
+								datePattern="dd-MMMM-yyyy"
+								required="#{param['validar'] == '1'}"
+								boundaryDatesMode = "none"	
+								requiredMessage="Campo requerido.">
+								<a4j:ajax  render="fechaManten msgFechaManten" />
+								</rich:calendar>
+								<rich:message for="fechaManten" id="msgFechaManten" />
+							</h:panelGroup>
+							
+							<h:panelGroup>
+								<b><h:outputText value="*Detalle de Mantenimiento:&#32;" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:inputTextarea id="desMantenimiento" value="#{mantenimientoGarantiaController.mantenimiento.descripcion}"
+									style="width: 100%;" required="#{param['validar'] == '1'}"
+									requiredMessage="Campo requerido.">
+									<a4j:ajax render="desMantenimiento msgDesMantenimiento" />
+								</h:inputTextarea>
+								<rich:message for="desMantenimiento" id="msgDesMantenimiento" />
+							</h:panelGroup>
+							
+						</h:panelGrid>
+					</div>
+					<br />
+					<div align="center">
+						<h:panelGroup id="botonesGuardarCancelarMN">
+							<a4j:commandButton value="Aceptar" render="matenimientoNuevoIngreso  tablaMantenimientoActivos"
+								 action="#{mantenimientoGarantiaController.guardarMantenimiento()}"
+								oncomplete="if(#{facesContext.maximumSeverity.ordinal!=2}) #{rich:component('ingresoMantenimientoPopup')}.hide()">
+								<a4j:param name="validar" value="1" />
+							</a4j:commandButton>
+							&#32;&#32;
+							<a4j:commandButton value="Cancelar" execute="@this"
+								render="matenimientoNuevoIngreso"
+								action="#{mantenimientoGarantiaController.limpiarValores()}"
+								oncomplete="#{rich:component('ingresoMantenimientoPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		
+		<rich:popupPanel id="ingresoGarantiaPopup" modal="true" autosized="true"
+			width="570" maxHeight="600">
+			<f:facet name="header">
+				<h:outputText value="Registro de garant&#237;a" />
+			</f:facet>
+			<h:form>
+				<h:panelGroup id="garantiaNuevoIngreso">
+					<div align="center">
+						<h:panelGrid columns="2" columnClasses="width30,width70"
+							style="width:90%">
+							<h:panelGroup>
+								<b><h:outputText value="*Fecha de Inicio" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<rich:calendar id="calendario"
+								value="#{mantenimientoGarantiaController.garantia.fecha}"
+								inputSize="25%" locale="es_ECU" 
+								datePattern="dd-MMMM-yyyy"
+								required="#{param['validar'] == '1'}"
+								boundaryDatesMode = "none"	
+								requiredMessage="Campo requerido.">
+								<a4j:ajax  render="calendario msgCalendario" />
+								</rich:calendar>
+								<rich:message for="calendario" id="msgCalendario" />
+							</h:panelGroup>
+							
+							<h:panelGroup>
+								<b><h:outputText value="*Duración:&#32;" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:inputText id="duracion" value="#{mantenimientoGarantiaController.garantia.duracion}"
+									style="width: 10%;" required="#{param['validar'] == '1'}" requiredMessage="Campo requerido." onkeypress="return validateQty(event);">
+									<a4j:ajax render="msgDuracion duracion" />
+								</h:inputText>
+								<rich:message for="duracion" id="msgDuracion" />
+								
+								<h:selectOneMenu id="tipo"
+									required="#{param['validar'] == '1'}"
+									value="#{mantenimientoGarantiaController.garantia.codigoTipoDuracion}"
+									requiredMessage="Campo requerido." style="width:40%">
+									<f:selectItem itemLabel="Seleccione..."
+										noSelectionOption="true" />
+									<f:selectItems value="#{mantenimientoGarantiaController.listaTipoDuracion}"
+										var="act" itemLabel="#{act.descripcion}"
+										itemValue="#{act.codigo}" />
+									<a4j:ajax execute="@this" render="tipo msgTipo" />
+								</h:selectOneMenu>
+								<rich:message for="tipo" id="msgTipo" />
+							</h:panelGroup>
+							
+						</h:panelGrid>
+					</div>
+					<br />
+					<div align="center">
+						<h:panelGroup id="botonesGuardarCancelarGN">
+							<a4j:commandButton value="Aceptar" render="garantiaNuevoIngreso  tablaGarantiaActivos"
+								 action="#{mantenimientoGarantiaController.guardarGarantia()}"
+								oncomplete="if(#{facesContext.maximumSeverity.ordinal!=2}) #{rich:component('ingresoGarantiaPopup')}.hide()">
+								<a4j:param name="validar" value="1" />
+							</a4j:commandButton>
+							&#32;&#32;
+							<a4j:commandButton value="Cancelar" execute="@this"
+								render="garantiaNuevoIngreso"
+								action="#{mantenimientoGarantiaController.limpiarValores()}"
+								oncomplete="#{rich:component('ingresoGarantiaPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,178 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedor.xhtml">
+	<ui:define name="titulo">
+       	Reponer
+    </ui:define>
+	<ui:define name="contenido">
+		<br />
+		<h:form>
+			<div style="width: 100%;" align="center">
+				<rich:panel style="width:90%">
+					<h:panelGrid columns="3" columnClasses="width30,width70," style="width:90%">
+						<h:outputText value="Serial del Activo:&#32;" style="font-weight: bold;" />
+						<h:panelGroup>
+							<h:inputText id="serialIt" value="#{reponerActivoController.serial}" style="width:95%" required="true" requiredMessage="Campo requerido" />
+							<rich:message for="serialIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+						</h:panelGroup>
+						<a4j:commandButton value="Buscar" action="#{reponerActivoController.buscarActivo()}" render="activosLista tablaActivos" />
+					</h:panelGrid>
+				</rich:panel>
+				<br />
+				<h:panelGroup id="activosLista">
+					<rich:panel style="width:90%">
+						<div style="width: 100%;">
+							<rich:dataTable id="tablaActivos" var="detalle" 
+								value="#{reponerActivoController.listaDetalleActivo}" 
+							 	noDataLabel="No se han encontrado resultados con los datos ingresados"
+           						onrowmouseover="this.style.backgroundColor='#FFFFE0'" 
+           						rows="50" style="width:95%;background-color:#F7FDFC;" iterationStatusVar="it"
+								onrowmouseout="this.style.backgroundColor='#F7FDFC'">
+								<rich:column>
+									<f:facet name="header">#</f:facet>
+               						#{it.index+1}
+            					</rich:column>
+            					<rich:column style="width:70px;">
+            						<f:facet name="header">Tipo</f:facet>
+            						<h:outputText value="#{detalle.descripcionTipoActivo}" />
+            					</rich:column>
+            					<rich:column style="width:110px;">
+            						<f:facet name="header">Asignado</f:facet>
+            						<h:outputText value="#{reponerActivoController.obtenerDescripcion(detalle.actLaboratorioSala.codigoTipo)}#{detalle.actLaboratorioSala.nombreTipo}" />
+            					</rich:column>
+            					<rich:column style="width:285px;">
+            						<f:facet name="header">Serial</f:facet>
+            						<h:outputText value="#{reponerActivoController.obtenerCadenaCortada(detalle.serial, 50)}" title="#{detalle.serial}" />
+            					</rich:column>
+            					<rich:column style="width:30px;">
+            						<f:facet name="header">A&#241;o</f:facet>
+            						<h:outputText value="#{detalle.actLaboratorioSala.actFormulario.anio}" />
+            					</rich:column>
+            					<rich:column>
+	          						<f:facet name="header"></f:facet>
+	          						<center>
+	            						<a4j:commandLink render="nuevoIngreso" oncomplete="#{rich:component('nuevoPopup')}.show()" 
+	            							action="#{reponerActivoController.tomarActivo(detalle)}">
+	            							<h:graphicImage value="/img/tick.gif" alt="Reponer" title="Reponer" />
+										</a4j:commandLink>
+									</center>
+								</rich:column>
+            					<f:facet name="footer">
+                					<rich:dataScroller />
+            					</f:facet>
+           					</rich:dataTable>
+						</div>
+					</rich:panel>
+				</h:panelGroup>
+			</div>
+		</h:form>
+
+		<rich:popupPanel id="reponerActivoPopup" modal="true" autosized="true"
+			width="600" maxHeight="600">
+			<f:facet name="header">
+				<h:outputText value="Reponer" />
+			</f:facet>
+			<h:form>
+				<h:panelGroup id="reponerIngreso">
+					<div align="center">
+						<rich:panel style="width:80%">
+							<h:panelGrid columns="1" style="width:90%">
+								<h:outputText value="Ud. va a realizar las siguientes acciones:&#32;" />
+								<p>
+									<h:outputLabel value="Reponer el activo con serial:&#32;" />
+									<h:outputLabel style="font-weight: bold;" title="#{reponerActivoController.detalleActivo.serial}"
+										value="#{reponerActivoController.obtenerCadenaCortada(reponerActivoController.detalleActivo.serial, 50)}" />
+								</p>
+								<h:outputText value="Una vez realizada la acción NO podra reversarla.&#32;" />
+								<h:outputText value="Si desea continuar presione Aceptar, caso contrario, presione Cancelar" />
+							</h:panelGrid>
+						</rich:panel>
+						<br/><br/>
+						<h:panelGroup id="botonesAceptar">
+							<a4j:commandButton value="Aceptar" execute="@this"
+								render="activosLista bajaIngreso tablaActivos activo obsDetalle"
+								action="#{reponerActivoController.reponerActivo()}"
+								oncomplete="#{rich:component('reponerActivoPopup')}.hide();#{rich:component('nuevoPopup')}.hide()">
+								<a4j:param name="validar" value="1" />
+							</a4j:commandButton>
+							<a4j:commandButton value="Cancelar" execute="@this"
+								render="bajaIngreso tablaActivos" action="#{reponerActivoController.limpiarValores()}"
+								oncomplete="#{rich:component('reponerActivoPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		
+		<rich:popupPanel id="nuevoPopup" modal="true" autosized="true"
+			width="600" maxHeight="600">
+			<f:facet name="header">
+				<h:outputText value="Ingreso Activo" />
+			</f:facet>
+			<h:form>
+				<h:panelGroup id="nuevoIngreso">
+				 <rich:messages ajaxRendered="true" globalOnly="true" showDetail="false"></rich:messages>
+					<div align="center">
+						<h:panelGrid columns="2" columnClasses="width30,width70"
+							style="width:90%">
+							<h:panelGroup>
+								<b><h:outputLabel style="font-size: 12px;" value="Activo" /></b>
+							</h:panelGroup>	
+							<h:panelGroup>				
+								<!-- quitar el disabled para elección de régimen -->											  													
+								<h:selectOneMenu id="activo"							
+									disabled="true"
+									value="#{reponerActivoController.detalleActivo.codigoTipo}"
+									requiredMessage="Campo obligatorio" style="width:54%">
+									<f:selectItem itemLabel="Seleccione..."
+										noSelectionOption="true" />
+									<f:selectItems value="#{reponerActivoController.tiposActivos}"
+										var="act" itemLabel="#{act.descripcion}"
+										itemValue="#{act.codigo}" />
+									<a4j:ajax execute="@this" render="activoSalaLab activo msgActivo tablaDetalleActivos"/>
+								</h:selectOneMenu>
+								<rich:message for="activo" id="msgActivo" />
+							</h:panelGroup>	
+							
+							<h:panelGroup>
+								<b><h:outputText value="*Serial:&#32;" /></b>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:inputText id="reponerObse" value="#{reponerActivoController.nuevoActivo.serial}"
+									style="width: 100%;" required="#{param['validar'] == '1'}"
+									requiredMessage="Campo requerido." maxlength="50">
+									<a4j:ajax render="reponerObse msgReponerObse" />
+								</h:inputText>
+								<rich:message for="reponerObse" id="msgReponerObse" />
+							</h:panelGroup>
+							
+						</h:panelGrid>
+					</div>
+					<br />
+					<div align="center">
+						<h:panelGroup id="botonesGuardarCancelarGN">
+							<a4j:commandButton value="Aceptar" render="nuevoIngreso reponerIngreso"
+								action="#{reponerActivoController.buscarSerialActivo()}"
+								oncomplete="if(#{facesContext.maximumSeverity.ordinal!=2}) #{rich:component('reponerActivoPopup')}.show()">
+								<a4j:param name="validar" value="1" />
+							</a4j:commandButton>
+							&#32;&#32;
+							<a4j:commandButton value="Cancelar" execute="@this"
+								render="nuevoIngreso"
+								action="#{reponerActivoController.limpiarValores()}"
+								oncomplete="#{rich:component('nuevoPopup')}.hide()">
+							</a4j:commandButton>
+						</h:panelGroup>
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+	</ui:define>
+</ui:composition>

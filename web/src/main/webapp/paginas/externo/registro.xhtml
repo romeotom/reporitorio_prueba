@@ -1,0 +1,235 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedorExterno.xhtml">
+
+	<ui:define name="titulo">
+        RECUPERAR CLAVE
+    </ui:define>
+
+	<ui:define name="contenido">
+		<h:form>
+			<script type="text/javascript">
+                /* <![CDATA[ */
+                function validateQty(event) {
+                    var key = window.event ? event.keyCode : event.which;
+                    if (event.keyCode == 8 || event.keyCode == 46 || event.keyCode == 37 || event.keyCode == 39) {
+                        return true;
+                    } else if ( key < 48 || key > 57 ) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+
+            /* ]]> */
+		   	</script>
+			<div align="center">
+				<div  style="width: 75%">
+					<h:panelGroup id="registro">
+						<h:panelGroup>
+
+							<br />
+							<br />
+							<b><h:outputLabel style="font-size: 18px;"
+									value="Recuperaci&#243;n de Clave de Funcionarios MINEDUC" /></b>
+							<br />
+							<br />
+							<br />
+							<h:panelGroup id="mensajes">
+								<h:panelGroup rendered="#{registroController.activarValidacion}"
+									id="pnmensaje">
+									<div style="width: 70%; background-color: rgb(255, 238, 221);"
+										class="errors" align="center">
+										<b><h:outputText style="font-size: 18px;"
+												value="#{registroController.mensajeValidacion}"
+												escape="false" /> <br /> </b>
+									</div>
+									<br />
+								</h:panelGroup>
+							</h:panelGroup>
+
+
+							<a4j:outputPanel id="panelNuevo">
+								<h:panelGrid columns="3"
+									columnClasses="width30, width-error, width30">
+
+									<h:panelGroup>
+										<b><h:outputLabel for="usuarioMineduc" value="Usuario * " /></b>
+									</h:panelGroup>
+									<h:inputText styleClass="input-registro" id="usuarioMineduc"
+										value="#{registroController.usuarioLdap}" required="true"
+										requiredMessage="Campo obligatorio"
+										onkeypress="if (event.keyCode == 13) {onchange(); return false; }">
+										<a4j:ajax event="change"
+											listener="#{registroController.obtenerDatosPersonales()}"
+											render="@this registro mensajes" />
+									</h:inputText>
+									<h:panelGrid>
+										<rich:message for="usuarioMineduc" />
+									</h:panelGrid>
+
+
+									<h:panelGroup>
+										<b><h:outputLabel for="identificacion" value="Cédula * " /></b>
+									</h:panelGroup>
+									<h:inputText styleClass="input-registro" id="identificacion"
+										value="#{registroController.cedulaUsuario}" maxlength="10"
+										required="true" requiredMessage="Campo obligatorio"
+										validatorMessage="Se acepta solo n&#250;meros">
+										<f:validateRegex pattern="^([0-9])*$" />
+									</h:inputText>
+									<h:panelGrid>
+										<rich:message for="identificacion" />
+									</h:panelGrid>
+
+
+									<h:panelGroup>
+										<b><h:outputLabel for="nombres" value="Nombres * " /></b>
+									</h:panelGroup>
+									<h:panelGroup>
+										<table style="width: 98%; height: 30px;">
+											<tr>
+												<td class="label-registro"><h:outputLabel id="nombres"
+														value="#{registroController.nombreUsuarioMineducLDAP}"
+														onkeyup="mayusculas(this);" /></td>
+											</tr>
+										</table>
+									</h:panelGroup>
+									<h:panelGrid>
+										<rich:message for="nombres" />
+									</h:panelGrid>
+
+
+									<h:panelGroup>
+										<b><h:outputLabel for="dactilar"
+												value="Indicador Dactilar * " /></b>
+									</h:panelGroup>
+									<h:panelGroup>
+										<table style="width: 100%; height: 30px;">
+											<tr>
+												<td><h:inputText id="dactilar"
+														styleClass="input-registro"
+														value="#{registroController.validadorDigital}"
+														required="true" requiredMessage="Campo obligatorio">
+														<f:ajax render="msgDactilar" />
+													</h:inputText></td>
+												<td><a4j:commandLink render="frmCatalogo,:idTitulo"
+														oncomplete="#{rich:component('noMentorPop')}.show()"
+														immediate="true">
+														<h:graphicImage value="/img/iconhelp.png" alt="Editar"
+															title="Indicador Dactilar" width="15" height="15" />
+													</a4j:commandLink></td>
+											</tr>
+										</table>
+									</h:panelGroup>
+									<h:panelGrid>
+										<rich:message id="msgDactilar" for="dactilar" />
+									</h:panelGrid>
+
+
+									<h:panelGroup>
+										<b><h:outputLabel for="fechaNacimiento"
+												value="Fecha de Nacimiento * " /></b>
+									</h:panelGroup>
+									<h:inputText mask="99/99/9999" styleClass="input-registro"
+										id="fechaNacimiento" required="true"
+										requiredMessage="Campo obligatorio"
+										value="#{registroController.fechaNacimiento}">
+									</h:inputText>
+									<h:panelGrid>
+										<rich:jQuery id="mskTextDataInicial"
+											selector="#fechaNacimiento" timing="immediate"
+											query="mask('99/99/9999',{placeholder:'__/__/____ '})"></rich:jQuery>
+										<rich:message for="fechaNacimiento" />
+									</h:panelGrid>
+
+
+
+									<!-- <h:outputLabel for="fecInicio" value="Fecha Nacimiento *"
+										style="font-weight: bold;" />
+									<rich:calendar value="#{registroController.fechaNac}"
+										id="fecInicio" locale="es_ES" popup="true"
+										datePattern="dd/MM/yyyy" required="true"
+										requiredMessage="Campo obligatorio" cellWidth="24px"
+										enableManualInput="true"
+										cellHeight="22px" style="width:100px">
+										 
+									</rich:calendar>
+									
+									<rich:message for="fecInicio" id="msjFecInicio" /> -->
+
+
+									<h:panelGroup>
+										<b> <h:outputLabel for="correo"
+												value="Correo Electr&#243;nico Personal * " /></b>
+									</h:panelGroup>
+									<h:inputText styleClass="input-registro" id="correo"
+										value="#{registroController.mailAlternativo}" maxlength="50"
+										required="true" requiredMessage="Campo obligatorio"
+										validatorMessage="Email no válido">
+										<f:ajax render="correo msjCorreo" />
+										<f:validateRegex
+											pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+									</h:inputText>
+									<h:panelGrid>
+										<rich:message for="correo" id="msjCorreo" />
+									</h:panelGrid>
+
+
+									<h:panelGroup>
+										<b> <h:outputLabel for="confirmCorreo"
+												value="Confirmar Correo Electr&#243;nico * " /></b>
+									</h:panelGroup>
+									<h:inputText styleClass="input-registro" id="confirmCorreo"
+										value="#{registroController.confirmMailAlternativo}"
+										maxlength="50" required="true"
+										requiredMessage="Campo obligatorio"
+										validatorMessage="Email no válido">
+										<f:ajax render="confirmCorreo msjConfirmCorreo" />
+										<f:validateRegex
+											pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+									</h:inputText>
+									<h:panelGrid>
+										<rich:message for="confirmCorreo" id="msjConfirmCorreo" />
+									</h:panelGrid>
+
+								</h:panelGrid>
+								<br />
+								<br />
+								<h:commandButton
+									style="padding: 5px;font-weight:bold;width: 160px;"
+									action="#{registroController.registro()}"
+									value="Recuperar Clave">
+								</h:commandButton>
+								<br />
+								<br />
+							</a4j:outputPanel>
+						</h:panelGroup>
+
+					</h:panelGroup>
+				</div>
+			</div>
+		</h:form>
+
+		<rich:popupPanel id="noMentorPop" header="Informaci&#243;n"
+			width="350" autosized="true" modal="true" rendered="true">
+			<center>
+				<h:form id="confirmacionFrm">
+					<rich:panel>
+						<h:graphicImage value="/img/dactilar.png" alt="Editar"
+							title="Indicador Dactilar" width="280" height="350" />
+					</rich:panel>
+					<center>
+						<a4j:commandButton value="Cerrar"
+							oncomplete="#{rich:component('noMentorPop')}.hide()"
+							immediate="true" />
+					</center>
+				</h:form>
+			</center>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>

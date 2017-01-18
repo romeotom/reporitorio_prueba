@@ -1,0 +1,28 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:composite="http://java.sun.com/jsf/composite">
+
+<composite:interface>
+	<composite:attribute name="source" />
+	<composite:attribute name="server" default="http://localhost:8181/jasperserver" />
+	<composite:attribute name="params" default="" />
+	<composite:attribute name="folder" default="reports" />
+    <composite:attribute name="user" default="#{sessionController.userSecurity.username}" />
+    <composite:attribute name="password" default="#{sessionController.userSecurity.username}" />
+	<composite:attribute name="decorate" default="no" />
+</composite:interface>
+
+<composite:implementation>
+	<div id="nombreReporte" style="display: none;">REPORTE: ${cc.attrs.source}</div>
+	<div align="center" style="height: 599px; margin-bottom: 0px ! important; padding-bottom: 0px ! important;">
+		<iframe
+			src="${cc.attrs.server}/flow.html?_flowId=viewReportFlow&amp;standAlone=true&amp;_flowId=viewReportFlow&amp;ParentFolderUri=%2F${cc.attrs.folder}&amp;reportUnit=%2F${cc.attrs.folder}%2F${cc.attrs.source}&amp;j_username=${cc.attrs.user}&amp;j_password=${cc.attrs.password}&amp;decorate=${cc.attrs.decorate}${cc.attrs.params}"
+			width="99%" height="635" style="border: 0px solid #999; margin-top: -20px; margin-bottom: 0px ! important;" />
+	</div>
+	<composite:insertChildren />
+</composite:implementation>
+</html>

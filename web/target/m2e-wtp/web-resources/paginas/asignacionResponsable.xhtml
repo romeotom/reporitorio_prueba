@@ -1,0 +1,152 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:reportes="http://java.sun.com/jsf/composite/visor"
+	template="/plantillas/contenedor.xhtml">
+
+	<ui:define name="titulo">
+        Responsable de Activos Tecnol&#243;gicos
+    </ui:define>
+
+	<ui:define name="contenido">
+		<script type="text/javascript">
+    		/* <![CDATA[ */
+		    function stopEnterKey(evt) {
+				var evt = (evt) ? evt : ((event) ? event : null);
+				var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
+				if ((evt.keyCode == 13) && (node.type=="text"))  { return false; } 
+			}
+			document.onkeypress = stopEnterKey;
+		    /* ]]> */
+		</script>
+		
+		<br />
+		<h:form>
+			<div style="width: 100;" align="right">
+				<h:commandButton value="Regresar" action="#{asignacionResponsableController.volver()}" immediate="true" />
+			</div>
+			<br />
+			<div style="width: 100%;" align="center">
+				<rich:panel style="width:95%">
+					<h:panelGrid columns="2" columnClasses="width30,width70" style="width:90%">
+						<h:outputText value="Responsable:" style="font-weight: bold;" />
+						<h:outputText value="#{asignacionResponsableController.responsable.nombre}" style="width:95%" />
+						<h:outputText value="Instituci&#243;n Educativa" style="font-weight: bold;" />
+						<h:outputText value="#{responsableController.buscarNombreInstitucion(asignacionResponsableController.responsable.codigoInstitucion)}" />
+					</h:panelGrid>
+				</rich:panel>
+				<br />
+				<div style="width: 100%;" align="right">
+					<a4j:commandButton value="Nueva Asignaci&#243;n" action="#{asignacionResponsableController.iniciarAsignacion()}" 
+						oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('asignacionPp')}.show(); return false;" 
+						render="asignacionFrm:asignacionPgr" />
+				</div>
+				<rich:dataTable value="#{asignacionResponsableController.detalleActivos}" rows="15" id="asignacionesDt" 
+					var="item" style="width: 100%;" noDataLabel="No existen resultados para la b&#250;squeda" iterationStatusVar="it">
+				    <rich:column>
+						<f:facet name="header">#</f:facet>
+	               		<h:outputText value="#{it.index+1}" />
+	           		</rich:column>
+					<rich:column style="width:30%">
+						<f:facet name="header">Tipo</f:facet>
+						<h:outputText value="#{asignacionResponsableController.buscarDescripcionTipo(item.codigoTipo)}" />
+					</rich:column>
+					<rich:column style="width:285px;">
+						<f:facet name="header">Serial</f:facet>
+						<h:outputText value="#{item.serial}" />
+					</rich:column>
+					<rich:column style="width:30px;">
+            			<f:facet name="header">A&#241;o</f:facet>
+						<center>
+							<h:outputText value="#{item.actLaboratorioSala.actFormulario.anio}" />
+						</center>
+					</rich:column>
+					<rich:column style="width: 20%;">
+						<f:facet name="header"></f:facet>
+						<center>
+							<a4j:commandLink action="#{asignacionResponsableController.seleccionarActivo(item)}" 
+								oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('confirmacionPp')}.show(); return false;" 
+								render="confirmacionFrm:seriaOt">
+								<h:graphicImage value="/img/delete.gif" alt="Editar" title="Eliminar Asignaci&#243;n" />
+							</a4j:commandLink>
+						</center>
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller render="resultadoCensosDt"/>
+					</f:facet>
+				</rich:dataTable>
+			</div>
+		</h:form>
+		
+		<rich:popupPanel id="asignacionPp" header="Asignaci&#243;n de Activo a un Responsable" width="600" autosized="true" modal="true" rendered="true">
+			<center>
+				<h:form id="asignacionFrm">
+					<h:panelGrid id="asignacionPgr" columns="3" columnClasses="width30,," style="width:90%">
+						<h:outputText value="AMIE:" style="font-weight: bold;" />
+						<h:outputText value="#{asignacionResponsableController.amie}" />
+						<h:outputText value="" />
+						
+						<h:outputText value="* Laboratorio/Sala:" style="font-weight: bold;" />
+						<h:panelGroup id="labSalaSomPg">
+							<h:selectOneMenu id="labSalaSom" value="#{asignacionResponsableController.labSalaSeleccionado}" required="true" requiredMessage="Campo requerido">
+								<f:selectItem itemLabel="Seleccione..." noSelectionOption="true" />
+								<f:selectItems value="#{asignacionResponsableController.tipoLaboratorios}" var="item" itemValue="#{item.codigo}" itemLabel="#{asignacionResponsableController.obtenerNombreLaboratorioSala(item.codigo)}#{item.descripcion}" />
+								<a4j:ajax listener="#{asignacionResponsableController.seleccionarLabSala()}" render="tipoSomPg, serialSomPg" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<rich:message for="labSalaSom" ajaxRendered="true" showSummary="true" showDetail="false" />
+						
+						<h:outputText value="* Tipo de Activo:" style="font-weight: bold;" />
+						<h:panelGroup id="tipoSomPg">
+							<h:selectOneMenu id="tipoSom" value="#{asignacionResponsableController.tipoSeleccionado}" required="true" requiredMessage="Campo requerido">
+								<f:selectItem itemLabel="Seleccione..." noSelectionOption="true" />
+								<f:selectItems value="#{asignacionResponsableController.tiposActivos}" var="item" itemValue="#{item.codigo}" itemLabel="#{item.descripcion}" />
+								<a4j:ajax listener="#{asignacionResponsableController.seleccionarTipoActivo()}" render="serialSomPg" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<rich:message for="tipoSom" ajaxRendered="true" showSummary="true" showDetail="false" />
+						
+						<h:outputText value="* Serial del Activo:" style="font-weight: bold;" />
+						<h:panelGroup id="serialSomPg">
+							<h:selectOneMenu id="serialSom" value="#{asignacionResponsableController.activoSeleccionado}" required="true" requiredMessage="Campo requerido">
+								<f:selectItem itemLabel="Seleccione..." noSelectionOption="true" />
+								<f:selectItems value="#{asignacionResponsableController.otherDetalleActivos}" var="item" itemValue="#{item.codigo}" itemLabel="#{item.serial}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<rich:message for="serialSom" ajaxRendered="true" showSummary="true" showDetail="false" />
+					</h:panelGrid>
+					<br />
+					<a4j:commandButton value="Guardar" action="#{asignacionResponsableController.asignar()}" 
+						oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('asignacionPp')}.hide();" render="asignacionesDt, asignacionPgr" />
+					&#160;
+			    	<a4j:commandButton value="Cancelar" onclick="#{rich:component('asignacionPp')}.hide(); return false;" immediate="true" />
+				</h:form>
+			</center>
+		</rich:popupPanel>
+		
+		<rich:popupPanel id="confirmacionPp" header="Confirmaci&#243;n" width="600" autosized="true" modal="true" rendered="true">
+			<center>
+				<h:form id="confirmacionFrm">
+					<rich:panel style="width:80%">
+						<h:panelGrid columns="1" style="width:90%">
+							<h:outputText value="Ud. va a realizar las siguientes acciones:&#32;" />
+							<p>
+								<h:outputLabel value="Eliminar la asignaci&#243;n del activo con serial:&#32;" />
+								<h:outputText id="seriaOt" style="font-weight: bold;" value="#{asignacionResponsableController.detalleActivo.serial}" />
+							</p>
+							<h:outputText value="Si desea continuar presione Aceptar, caso contrario, presione Cancelar" />
+						</h:panelGrid>
+					</rich:panel>
+					<br />
+					<a4j:commandButton value="Aceptar" action="#{asignacionResponsableController.eliminarAsignacion()}" 
+						oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('confirmacionPp')}.hide();" render="asignacionesDt" />
+					&#160;
+			    	<a4j:commandButton value="Cancelar" onclick="#{rich:component('confirmacionPp')}.hide(); return false;" immediate="true" />
+				</h:form>
+			</center>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>

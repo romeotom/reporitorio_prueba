@@ -1,0 +1,86 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="/plantillas/contenedor.xhtml">
+
+	<ui:define name="titulo">
+        Gesti&#243;n de Activos Tecnol&#243;gicos
+    </ui:define>
+
+	<ui:define name="contenido">
+		<br />
+		<h:panelGroup rendered="#{gestionActivoController.verFormulario}">
+			<h:form>
+					<div style="width: 100%;" align="right">
+						<a4j:commandButton value="Nuevo Laboratorio/Sala" action="#{gestionActivoController.crearActLaboratorioSala()}"  
+							oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('labSalaPp')}.show(); return false;" render="labSalaFrm:labSalaPgr" />
+						&#160;&#160;
+						<a4j:commandButton value="Nuevo Activo" action="#{gestionActivoController.crearActivo()}" render="activoFrm:activoPgr" title="Inicializa el formulario" />
+					</div>
+					<br />
+			</h:form>
+			<h:form id="activoFrm">
+				<div style="width: 100%;" align="center">
+					<h:panelGrid id="activoPgr" columns="3" columnClasses="width30,," style="width:90%">
+						<h:outputText value="* Ubicaci&#243;n:" style="font-weight: bold;" />
+						<h:selectOneMenu id="labSalaSom" value="#{gestionActivoController.labSalaSeleccionado}" required="true" requiredMessage="Campo requerido" style="width: 200px;">
+							<f:selectItem itemLabel="Seleccione..." noSelectionOption="true" />
+							<f:selectItems value="#{gestionActivoController.laboratorioSalas}" var="item" itemValue="#{item.codigo}" itemLabel="#{gestionActivoController.obtenerNombreLaboratorioSala(item.codigoTipo)}#{item.nombreTipo}" />
+							<a4j:ajax listener="#{gestionActivoController.cargarTipoActivos()}" render="tipoSomPg" />
+						</h:selectOneMenu>
+						<rich:message for="labSalaSom" ajaxRendered="true" showSummary="true" showDetail="false"  />
+						<h:outputText value="* Tipo de Activo:" style="font-weight: bold;" />
+						<h:panelGroup id="tipoSomPg">
+							<h:selectOneMenu id="tipoSom" value="#{gestionActivoController.tipoActivoSeleccionado}" required="true" requiredMessage="Campo requerido" style="width: 200px;">
+								<f:selectItem itemLabel="Seleccione..." noSelectionOption="true" />
+								<f:selectItems value="#{gestionActivoController.tipoActivos}" var="item" itemValue="#{item.codigo}" itemLabel="#{item.descripcion}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<rich:message for="tipoSom" ajaxRendered="true" showSummary="true" showDetail="false"  />
+						<h:outputText value="* Serial de Activo:" style="font-weight: bold;" />
+						<h:inputText id="serialIt" value="#{gestionActivoController.actDetalleActivo.serial}" style="width:200px;" maxlength="50" required="true" requiredMessage="Campo requerido" />
+						<rich:message for="serialIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+					</h:panelGrid>
+					<br />
+					<a4j:commandButton value="Guardar Activo" action="#{gestionActivoController.guardarActivo()}" render="activoFrm:activoPgr" />
+				</div>
+			</h:form>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not gestionActivoController.verFormulario}">
+			<h:outputText value="#{gestionActivoController.mensajeInstitucionError}" />
+		</h:panelGroup>
+		
+		<rich:popupPanel id="labSalaPp" header="Laboratorio/Sala" width="600" autosized="true" modal="true" rendered="true">
+			<center>
+				<h:form id="labSalaFrm">
+					<h:panelGrid id="labSalaPgr" columns="3" columnClasses="width30,," style="width:90%">
+						<h:outputText value="* Laboratorio/Sala:" style="font-weight: bold;" />
+						<h:selectOneMenu id="tipoLabSalaSom" value="#{gestionActivoController.tipoLaboratorioSeleccionado}">
+							<f:selectItem itemLabel="Seleccione..." noSelectionOption="true" />
+							<f:selectItems value="#{gestionActivoController.tipoLaboratorios}" var="item" itemValue="#{item.codigo}" itemLabel="#{item.descripcion}" />
+							<a4j:ajax listener="#{gestionActivoController.seleccionarTipoLabSalas()}" render="nombreTiPg" />
+						</h:selectOneMenu>
+						<rich:message for="tipoLabSalaSom" ajaxRendered="true" showSummary="true" showDetail="false" />
+						<h:outputText value="N&#250;mero:" style="font-weight: bold;" />
+						<h:panelGroup id="nombreTiPg">
+							<h:selectOneMenu id="nombreLabSalaSom" value="#{gestionActivoController.nombreSeleccionado}" 
+								disabled="#{gestionActivoController.tipoLaboratorioSeleccionado != 6}" required="#{gestionActivoController.tipoLaboratorioSeleccionado == 6}" requiredMessage="Campo requerido">
+								<f:selectItem itemLabel="Seleccione..." noSelectionOption="true" />
+								<f:selectItems value="#{gestionActivoController.nombres}" var="item" itemValue="#{item}" itemLabel="#{item}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<rich:message for="nombreLabSalaSom" ajaxRendered="true" showSummary="true" showDetail="false" />
+					</h:panelGrid>
+					<br />
+					<a4j:commandButton value="Guardar" action="#{gestionActivoController.guardarActLaboratorioSala()}" 
+						oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('labSalaPp')}.hide();" render="activoFrm:activoPgr" />
+					&#160;
+			    	<a4j:commandButton value="Cancelar" onclick="#{rich:component('labSalaPp')}.hide(); return false;" immediate="true" />
+				</h:form>
+			</center>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,199 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:reportes="http://java.sun.com/jsf/composite/visor"
+	template="/plantillas/contenedor.xhtml">
+
+	<ui:define name="titulo">
+        Responsable de Activos Tecnol&#243;gicos
+    </ui:define>
+
+	<ui:define name="contenido">
+		<script type="text/javascript">
+    		/* <![CDATA[ */
+		    function stopEnterKey(evt) {
+				var evt = (evt) ? evt : ((event) ? event : null);
+				var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
+				if ((evt.keyCode == 13) && (node.type=="text"))  { return false; } 
+			}
+			document.onkeypress = stopEnterKey;
+			
+		    function validateQty(event) {
+			    var key = window.event ? event.keyCode : event.which;
+				if (event.keyCode == 8 || event.keyCode == 46 || event.keyCode == 37 || event.keyCode == 39) {
+				    return true;
+				} else if ( key < 48 || key > 57 ) {
+				    return false;
+				} else {
+					return true;
+				}
+			}
+
+		    function validarLtr(event) {
+		    	var key = window.event ? event.keyCode : event.which;
+		    	if (event.keyCode == 8 || event.keyCode == 46 || event.keyCode == 37 || event.keyCode == 39) {
+				    return true;
+				} else if (key == 32) {
+				    return true;
+				} else if (key >= 96 && key <= 111) {
+				    return false;
+				} else {
+		        	patron = /[a-zA-Z]/;
+					tecla = String.fromCharCode(key);
+		    		return patron.test(tecla);
+				}
+		    }
+		    /* ]]> */
+		</script>
+		
+		<br />
+		<h:panelGroup rendered="#{responsableController.esDistrito}">
+			<h:form>
+				<div style="width: 100%;" align="center">
+					<rich:panel style="width:95%">
+						<h:panelGrid columns="3" columnClasses="width30,width70," style="width:90%">
+							<h:outputText value="Buscar por:" style="font-weight: bold;" />
+							<h:selectOneRadio value="#{responsableController.busquedaSeleccionada}" style="width:90%">
+								<f:selectItems value="#{responsableController.tiposBusqueda}" var="item" itemValue="#{item.codigo}" itemLabel="#{item.descripcion}" />
+								<a4j:ajax listener="#{responsableController.configurarTipoBusqueda()}" render="busquedaLblPg, busquedaTxtPg" />
+							</h:selectOneRadio>
+							<h:outputText value="" />
+							<h:panelGroup id="busquedaLblPg">
+								<h:outputText value="#{responsableController.busquedaSeleccionada == 0 ? 'Identificaci&#243;n:' : (responsableController.busquedaSeleccionada == 1 ? 'Nombres:' : 'Serial: ')}" style="font-weight: bold;" />
+							</h:panelGroup>
+							<h:panelGroup id="busquedaTxtPg">
+								<h:inputText id="busquedaIt" value="#{responsableController.descripcionBusqueda}" style="width:95%" required="true" requiredMessage="Campo requerido" />
+								<rich:message for="busquedaIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+							</h:panelGroup>
+							<a4j:commandButton id="buscarBtn" value="Buscar" action="#{responsableController.buscar()}" render="otherResponsableFrm:responsablesDt" />
+						</h:panelGrid>
+					</rich:panel>
+					<br />
+				</div>
+			</h:form>
+			<h:form id="otherResponsableFrm">
+				<div style="width: 100%;" align="center">
+					<div style="width: 100%;" align="right">
+						<a4j:commandButton value="Nuevo Responsable" action="#{responsableController.crearResponsable()}" 
+							oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('responsablePp')}.show(); return false;" 
+							render="responsableFrm:mensajeEdicionPgr, responsableFrm:mensajeResponsablePgr, responsableFrm:responsablePgr" immediate="true" />
+					</div>
+					<rich:dataTable value="#{responsableController.responsables}" rows="15" id="responsablesDt" 
+						var="item" style="width: 100%;" noDataLabel="No existen resultados para la b&#250;squeda" iterationStatusVar="it">
+					    <rich:column style="width:3%">
+							<f:facet name="header">#</f:facet>
+		               		<h:outputText value="#{it.index+1}" />
+		           		</rich:column>
+						<rich:column>
+							<f:facet name="header">Responsable</f:facet>
+							<h:outputText value="#{item.nombre}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">Identificaci&#243;n</f:facet>
+							<h:outputText value="#{item.identificacion}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">Instituci&#243;n Educativa</f:facet>
+							<h:outputText value="#{responsableController.buscarNombreInstitucion(item.codigoInstitucion)}" />
+						</rich:column>
+						<rich:column style="width: 10%;">
+							<f:facet name="header">Estado</f:facet>
+							<center>
+								<h:outputText value="#{item.estado == 0 ? 'Inactivo' : 'Activo'}" />
+							</center>
+						</rich:column>
+						<rich:column style="width: 20%;">
+							<f:facet name="header">Opciones</f:facet>
+							<center>
+								<a4j:commandLink action="#{responsableController.editarResponsable(item)}"
+									oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0) #{rich:component('responsablePp')}.show(); return false;" 
+									render="responsableFrm:mensajeEdicionPgr, responsableFrm:mensajeResponsablePgr, responsableFrm:responsablePgr"> 
+									<h:graphicImage value="/img/edit.gif" alt="Editar" title="Editar Responsable" />
+								</a4j:commandLink>
+								&#160;
+								<h:commandButton action="#{responsableController.ingresarAsignacion(item)}" 
+									image="/img/add_delete.gif" title="Asignar / Eliminar Asignaci&#243;n" rendered="#{item.estado != 0}"/>
+							</center>
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller render="responsablesDt"/>
+						</f:facet>
+					</rich:dataTable>
+				</div>
+			</h:form>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not responsableController.esDistrito}">
+			<h:outputText value="#{responsableController.mensajeDistritoError}" />
+		</h:panelGroup>
+		
+		<rich:popupPanel id="responsablePp" header="Responsable" width="600" autosized="true" modal="true" rendered="true">
+			<center>
+				<h:form id="responsableFrm">
+					<h:panelGroup id="mensajeEdicionPgr">
+						<h:panelGroup rendered="#{responsableController.responsable.codigo > 0}">
+							<div style="background: white; display: block; padding: 15px 50px; border: 1px solid #B3B3B3; width: 80%; text-align: left;">
+								<h:outputLabel value="Estimado Usuario: " />
+								<br /><br />
+								<h:outputLabel value="Al editar un responsable considere:" />
+								<br />
+								<ul>
+									<li><h:outputLabel value="No puede inactivar un responsable cuando este tiene activos tecnol&#243;gicos (no dados de baja) asignados, primero debe eliminar las asignaciones de dichos activos tecnol&#243;gicos para poder realizar la inactivaci&#243;n." /></li>
+								</ul>
+							</div>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup id="mensajeResponsablePgr">
+						<h:panelGroup rendered="#{not empty responsableController.mensajeResponsables}">
+							<div style="width: 75%;">
+								<h:outputText value="#{responsableController.mensajeResponsables}" style="color: red;" />
+							</div>
+						</h:panelGroup>
+					</h:panelGroup>
+					<br />
+					<h:panelGrid id="responsablePgr" columns="3" columnClasses="width30,," style="width:90%">
+						<h:outputText value="* C&#243;digo AMIE:" style="font-weight: bold;" />
+						<h:inputText id="amieIt" value="#{responsableController.amie}" style="width:200px; text-transform: uppercase;" maxlength="8" 
+							required="true" requiredMessage="Campo requerido" onblur="value=value.toUpperCase()" validatorMessage="Longitud m&#237;nima permitida '8'">
+							<f:validateLength minimum="8" maximum="8" for="amieIt" /> 
+						</h:inputText>
+						<rich:message for="amieIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+						<h:outputText value="* Identificaci&#243;n:" style="font-weight: bold;" />
+						<h:inputText id="identificacionIt" value="#{responsableController.identificacion}" 
+							style="width:200px; text-transform: uppercase;" maxlength="10" required="true" requiredMessage="Campo requerido" onblur="value=value.toUpperCase()" />
+						<rich:message for="identificacionIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+						<h:outputText value="* Nombres completos:" style="font-weight: bold;" />
+						<h:inputText id="nombreIt" value="#{responsableController.responsable.nombre}" 
+							style="width:200px; text-transform: uppercase;" maxlength="255"	required="true" requiredMessage="Campo requerido" onblur="value=value.toUpperCase()" onkeydown="return validarLtr(event);" />
+						<rich:message for="nombreIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+						<h:outputText value="* Correo electr&#243;nico:" style="font-weight: bold;" />
+						<h:inputText id="emailIt" value="#{responsableController.responsable.email}" 
+							style="width:200px" maxlength="255" required="true" requiredMessage="Campo requerido" validatorMessage="Correo electr&#243;nico inv&#225;lido">
+							<f:validateRegex pattern="(.+@.+\.[a-zA-Z]+)?" />
+						</h:inputText>
+						<rich:message for="emailIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+						<h:outputText value="* Tel&#233;fono:" style="font-weight: bold;" />
+						<h:inputText id="telefonoIt" value="#{responsableController.responsable.contactoUno}" 
+							style="width:200px" maxlength="10" required="true" requiredMessage="Campo requerido" onkeypress="return validateQty(event);" />
+						<rich:message for="telefonoIt" ajaxRendered="true" showSummary="true" showDetail="false" />
+						<h:outputText value="Tel&#233;fono:" style="font-weight: bold;" />
+						<h:inputText value="#{responsableController.responsable.contactoDos}" style="width:200px" maxlength="10" onkeypress="return validateQty(event);" />
+						<h:outputText value="" />
+						<h:outputText value="* Estado:" style="font-weight: bold;" />
+						<h:selectOneMenu value="#{responsableController.responsable.estado}" disabled="#{responsableController.deshabilitarEstados}">
+							<f:selectItems value="#{responsableController.obtenerEstados()}" var="item" itemValue="#{item.codigo}" itemLabel="#{item.descripcion}" />
+						</h:selectOneMenu>
+						<h:outputText value="" />
+					</h:panelGrid>
+					<br />
+					<a4j:commandButton value="Guardar" action="#{responsableController.guardarResponsable()}" 
+						oncomplete="if('#{facesContext.maximumSeverity}'.indexOf('ERROR') &lt; 0 &#38;&#38; #{empty responsableController.mensajeResponsables}) #{rich:component('responsablePp')}.hide();" render="otherResponsableFrm:responsablesDt, mensajeResponsablePgr, responsablePgr" />
+					&#160;
+			    	<a4j:commandButton value="Cancelar" onclick="#{rich:component('responsablePp')}.hide(); return false;" immediate="true" />
+				</h:form>
+			</center>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
